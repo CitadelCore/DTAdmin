@@ -16,9 +16,21 @@ $.post('server/backend.php', {command: 'NEWSERVER', servername: servername, serv
 }
 
 function submitProfileEditForm() {
-  $('#profileedit').validator()
+  $('#passwordConfirmModal').modal('show');
 }
 
+function submitAccountDeleteForm() {
+  var deleteusername = document.forms["accountDeleteForm"]["deleteusername"]
+  var deletepassword = document.forms["accountDeleteForm"]["deletepassword"]
+}
+
+function openPasswordChangeModal() {
+  $('#passwordChangeModal').modal('show');
+}
+
+function openAccountDeleteModal() {
+  $('#accountDeleteModal').modal('show');
+}
 
 function resetCreateForm() {
 

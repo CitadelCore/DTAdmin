@@ -36,6 +36,7 @@ $('#login-modal').modal('hide');
 $('#progressModal').modal('show');
 var user = document.forms["loginform"]["userid"].value;
 var pass = document.forms["loginform"]["password"].value;
+var pass = sha512(pass);
 var usernameerrorblock = document.getElementById("username-error-block");
 var passworderrorblock = document.getElementById("password-error-block");
 var loginerrorblock = document.getElementById("login-error-block");

@@ -217,8 +217,10 @@ sec_session_start();
                                       <p class="form-control-static"><?php echo $permissionlevel; ?></p>
                                       <p class="help-block">Your user access level.</p>
                                   </div>
-                                  <button type="submit" class="btn btn-primary">Update profile</button>
-                                  <button type="reset" class="btn btn-default" onclick="resetCreateForm()">Reset form</button>
+                                  <button type="submit" class="btn btn-primary"><i class="fa fa-save fa-fw"></i>Update profile</button>
+                                  <!--<button type="reset" class="btn btn-default" onclick="resetCreateForm()"><i class="fa fa-refresh fa-fw"></i>Reset form</button>-->
+                                  <button type="button" class="btn btn-default" onclick="openPasswordChangeModal()"><i class="fa fa-key fa-fw"></i>Change password</button>
+                                  <button type="button" class="btn btn-danger" onclick="openAccountDeleteModal()"><i class="fa fa-trash fa-fw"></i>Delete account</button>
                                 </div>
                                 <div class="col-lg-6">
                                   <div class="form-group">
@@ -293,7 +295,7 @@ sec_session_start();
                     </div>
                 <div class="modal-footer">
                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                 <button type="button" class="btn btn-danger" onclick="deleteSecretKey(<?php echo $secretid; ?>, <?php echo $_SESSION['user_id']; ?>)">Confirm deletion</button>
+                 <button type="button" class="btn btn-danger" onclick="deleteSecretKey(<?php echo $secretid; ?>, <?php echo $_SESSION['user_id']; ?>)"><i class="fa fa-trash fa-fw"></i>Confirm deletion</button>
                  <div class="help-block with-errors" id="deleteerrorblock"></div>
                 </div>
                </div>
@@ -327,6 +329,101 @@ sec_session_start();
             </div>
            </div>
           </div>
+
+          <div class="modal fade" id="passwordConfirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+           <div class="modal-dialog" role="document">
+            <div class="modal-content">
+             <div class="modal-header">
+              <h5 class="modal-title">Security checkpoint</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+               </button>
+             </div>
+              <div class="modal-body">
+               <p>Please re-enter your password to save changes.</p>
+               <form role="form" id="checkpointForm" action="javascript:submitCheckpointForm()">
+                 <div class="form-group">
+                     <label>Password</label>
+                     <input class="form-control" type="password" name="cppassword"></input>
+                 </div>
+              </div>
+          <div class="modal-footer">
+           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+           <button type="submit" class="btn btn-primary"><i class="fa fa-save fa-fw"></i>Save changes</button>
+           <div class="help-block with-errors" id="cperrorblock"></div>
+          </div>
+        </form>
+         </div>
+        </div>
+       </div>
+
+       <div class="modal fade" id="passwordChangeModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+         <div class="modal-content">
+          <div class="modal-header">
+           <h5 class="modal-title">Change your password</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+             <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+           <div class="modal-body">
+            <p>Enter your current password and confirm your new one.</p>
+            <form role="form" id="checkpointForm" action="javascript:submitPasswordChange()">
+              <div class="form-group">
+                  <label>Old Password</label>
+                  <input class="form-control" type="password" name="oldpassword"></input>
+                  <p class="help-block">Enter your old password.</p>
+              </div>
+              <div class="form-group">
+                  <label>New Password</label>
+                  <input class="form-control" type="password" name="newpassword"></input>
+                  <p class="help-block">Enter your new password.</p>
+                  <input class="form-control" type="password" name="newpasswordconfirm"></input>
+                  <p class="help-block">Confirm your new password.</p>
+              </div>
+           </div>
+       <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa fa-key fa-fw"></i>Change password</button>
+        <div class="help-block with-errors" id="changeerrorblock"></div>
+       </div>
+     </form>
+      </div>
+     </div>
+    </div>
+
+    <div class="modal fade" id="accountDeleteModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+     <div class="modal-dialog" role="document">
+      <div class="modal-content">
+       <div class="modal-header">
+        <h5 class="modal-title">Delete your account</h5>
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+         </button>
+       </div>
+        <div class="modal-body">
+         <p>Are you really really sure you want to delete your account? If you are, please confirm both your username and password.</p>
+         <form role="form" id="accountDeleteForm" action="javascript:submitAccountDeleteForm()">
+           <div class="form-group">
+               <label>Username</label>
+               <input class="form-control" name="deleteusername"></input>
+               <p class="help-block">Enter your username.</p>
+           </div>
+           <div class="form-group">
+               <label>Confirm Password</label>
+               <input class="form-control" type="password" name="deletepassword"></input>
+               <p class="help-block">Enter your password.</p>
+           </div>
+        </div>
+    <div class="modal-footer">
+     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+     <button type="submit" class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Confirm deletion</button>
+     <div class="help-block with-errors" id="changeerrorblock"></div>
+    </div>
+  </form>
+   </div>
+  </div>
+ </div>
                 <!-- /.row -->
             </div>
             <!-- /.container-fluid -->

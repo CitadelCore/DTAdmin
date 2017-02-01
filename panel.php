@@ -227,8 +227,8 @@ sec_session_start();
                                     <i class="fa fa-tasks fa-5x"></i>
                                 </div>
                                 <div class="col-xs-9 text-right">
-                                    <div class="huge">0</div>
-                                    <div>Running Servers</div>
+                                    <div class="huge"><?php echo getOnlineServers($mysqli); ?></div>
+                                    <div>Running Server<?php if (getOnlineServers($mysqli) != 1) { echo "s"; } ?></div>
                                 </div>
                             </div>
                         </div>

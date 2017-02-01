@@ -59,6 +59,27 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`staffranks` (
     `rankedon` VARCHAR(30) NOT NULL,
     `serverrank` VARCHAR(30) NOT NULL
 );
+CREATE TABLE IF NOT EXISTS `dtadmin`.`usergroups` (
+    `groupid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `groupname` VARCHAR(30) NOT NULL,
+    `directinferior` VARCHAR(30) NOT NULL,
+    `directsuperior` VARCHAR(30) NOT NULL,
+    `cancreateservers` BOOLEAN NOT NULL,
+    `candeleteservers` BOOLEAN NOT NULL,
+    `canmodifyservers` BOOLEAN NOT NULL,
+    `canoverridemanager` BOOLEAN NOT NULL,
+    `canmanagedtquerykey` BOOLEAN NOT NULL,
+    `cancreateusers` BOOLEAN NOT NULL,
+    `candeleteusers` BOOLEAN NOT NULL,
+    `canmodifyusers` BOOLEAN NOT NULL,
+    `caninstallplugins` BOOLEAN NOT NULL,
+    `canseeallchat` BOOLEAN NOT NULL,
+    `candeletechat` BOOLEAN NOT NULL,
+    `canseeallmessages` BOOLEAN NOT NULL,
+    `candeletemessages` BOOLEAN NOT NULL,
+    `canverifyuser` BOOLEAN NOT NULL,
+    `canblockip` BOOLEAN NOT NULL
+);
 CREATE TABLE IF NOT EXISTS `dtadmin`.`alerts` (
     `alertid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `userid` INT(10) NOT NULL,
@@ -92,9 +113,13 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`usersecrets` (
     `note` TEXT NOT NULL,
     `timecreated` DATETIME NOT NULL
 );
-INSERT INTO `dtadmin`.`members` VALUES(1, 'josephmarsden', '$2y$10$zl19UVkCZusIH3aFt4ZvA.3QF30utdgbJyt0m52oMkCNrSWXUOD.e', 'root', 'Joseph', 'Marsden', 'josephmarsden@towerdevs.xyz', '0');
+INSERT INTO `dtadmin`.`members` VALUES(1, 'josephmarsden', '$2y$10$lHRotbIKh8sdPiZyE7GtVOjZThiSDDBSPbBzjXezehpFxJbj7Vthu', 'root', 'Joseph', 'Marsden', 'josephmarsden@towerdevs.xyz', '0');
 INSERT INTO `dtadmin`.`usersecrets` VALUES(1, 1, 'jH8jdh27j83k5p2ha', 'TestNote', '0000-00-00');
 
+INSERT INTO `dtadmin`.`usergroups` VALUES(1, 'root', 'employee', 'nosuperior', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO `dtadmin`.`usergroups` VALUES(2, 'employee', 'developer', 'root', 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0);
+INSERT INTO `dtadmin`.`usergroups` VALUES(3, 'developer', 'user', 'employee', 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0);
+INSERT INTO `dtadmin`.`usergroups` VALUES(4, 'user', 'noinferior', 'developer', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 --INSERT INTO `dtadmin`.`servers` VALUES(1, 'Test Server', 'Online', '12', '00:01:41', 'Vanilla', 'Team Fortress 2', '1', '2048', '2048', '75', '127.0.0.1', 'test.towerdevs.xyz', '27015', '43105', 'insecure', 'insecure');
 --INSERT INTO `dtadmin`.`servers` VALUES(2, 'Development Server', 'Offline', '0', '00:00:00', 'Vanilla', 'Garrys Mod', '1', '2048', '2048', '0', '127.0.0.1', 'locahost', '27015', '43105', 'devtest8642', 'none');
 

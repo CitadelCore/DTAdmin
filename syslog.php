@@ -200,20 +200,20 @@ sec_session_start();
             <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline">
               <thead>
                 <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Event ID: activate to sort column descending" style="width: 90px;">Event ID</th>
-                <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="User ID: activate to sort column descending" style="width: 90px;">User ID</th>
+                <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Username: activate to sort column descending" style="width: 90px;">Username</th>
                 <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Event Time: activate to sort column descending" style="width: 100px;">Event Time</th>
                 <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Reason: activate to sort column descending" style="width: 200px;">Reason</th>
                 <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="User IP: activate to sort column descending" style="width: 150px;">User IP</th>
               </thead>
-              <?php if ($stmt = $mysqli->prepare("SELECT event, user_id, time, reason, clientip
+              <?php if ($stmt = $mysqli->prepare("SELECT event, user_id, username, time, reason, clientip
                   FROM syslog
                   LIMIT 20")) {
                     $stmt->execute();
-                    $stmt->bind_result($event, $user_id, $time, $reason, $clientip);
+                    $stmt->bind_result($event, $user_id, $username, $time, $reason, $clientip);
                     while($row = $stmt->fetch()) { ?>
                      <tr>
                       <td><?php echo $event; ?></td>
-                      <td><?php echo $user_id; ?></td>
+                      <td><?php echo $username; ?></td>
                       <td><?php echo $time; ?></td>
                       <td><?php echo $reason; ?></td>
                       <td><?php echo $clientip; ?></td>
