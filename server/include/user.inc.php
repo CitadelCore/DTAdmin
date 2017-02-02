@@ -221,4 +221,17 @@ function deleteUserProfile($mysqli, $userid) {
     }
 }
 
+function setUserDisabled($mysqli, $userid, $disabled) {
+  if ($stmt = $mysqli->prepare("UPDATE members
+                                SET disabled='$disabled'
+                                WHERE id=?")) {
+    $stmt->bind_param('i', $userid);
+    $stmt->execute();
+    $stmt->store_result();
+    return true;
+  } else {
+    return false;
+  }
+}
+
 ?>

@@ -7,6 +7,7 @@ sec_session_start();
 if($_SERVER["REQUEST_METHOD"] == "POST") {
 $postdata = $_POST['command'];
 if ($postdata == "ISREADY") {
+  logClientIP($mysqli);
   echo "410A";
   //echo "420A"; //For testing
 } elseif ($postdata == "CREDPAYLOAD"){
@@ -157,5 +158,8 @@ elseif ($postdata == "CREATESECRETKEY") {
 } else {
   echo "300A";
 }
+} else {
+  http_response_code(405);
+  echo "<h2>Method Not Allowed</h2>";
 }
 ?>

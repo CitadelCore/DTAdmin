@@ -22,6 +22,14 @@ function sec_session_start() {
     session_regenerate_id(true);    // regenerated the session, delete the old one.
 }
 
+function logClientIP($mysqli) {
+  $clientip = $_SERVER['REMOTE_ADDR'];
+  $now = time();
+  $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                  VALUES (NULL, 0, 'NOUSER', '$now', 'Login page accessed', '$clientip')");
+  echo $mysqli->error;
+}
+
 function login($userid, $password, $mysqli) {
     $clientip = $_SERVER['REMOTE_ADDR'];
     if ($stmt = $mysqli->prepare("SELECT id, userid, password
@@ -54,17 +62,25 @@ function login($userid, $password, $mysqli) {
                               $db_password . $user_browser);
                     $errorreason = "correctuser";
                     $now = time();
-                    $mysqli->query("INSERT INTO syslog(user_id, username, time, reason, clientip)
-                                    VALUES ('$user_id', '$username', '$now', 'Administrator logged in', '$clientip')");
+                    $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                                    VALUES (NULL, '$user_id', '$username', '$now', 'Administrator logged in', '$clientip')");
                     return "correctuser";
                 } else {
                     $now = time();
+                    $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+                    $username = preg_replace("/[^a-zA-Z0-9_\-]+/",
+                                                                "",
+                                                                $username);
                     $mysqli->query("INSERT INTO login_attempts(user_id, time, clientip)
                                     VALUES ('$user_id', '$now', '$clientip')");
                     $errorreason = "incorrectpass";
                     $now = time();
-                    $mysqli->query("INSERT INTO syslog(user_id, username, time, reason, clientip)
-                                    VALUES ('$user_id', '$username', '$now', 'Incorrect password attempt', '$clientip')");
+                    $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+                    $username = preg_replace("/[^a-zA-Z0-9_\-]+/",
+                                                                "",
+                                                                $username);
+                    $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                                    VALUES (NULL, '$user_id', '$username', '$now', 'Incorrect password attempt', '$clientip')");
                     return "incorrectpass";
                 }
             }
@@ -72,8 +88,9 @@ function login($userid, $password, $mysqli) {
             // No user exists.
             $errorreason = "usernotexist";
             $now = time();
-            $mysqli->query("INSERT INTO syslog(user_id, username, time, reason, clientip)
-                            VALUES ('NONE', '$userid', '$now', 'Incorrect username attempt', '$clientip')");
+            $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+            $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                            VALUES (NULL, 0, '$userid', '$now', 'Incorrect username attempt', '$clientip')");
             return "usernotexist";
         }
     }
@@ -123,33 +140,37 @@ function login_check($mysqli) {
                 $login_check = hash('sha512', $password . $user_browser);
                 if (hash_equals($login_check, $login_string) ){
                     //loggedin
+                    sendAccountVerifiedMail($mysqli, $user_id);
                     return true;
                 } else {
                     //notloggedin
                     $now = time();
-                    $mysqli->query("INSERT INTO syslog(user_id, username, time, reason, clientip)
-                                    VALUES ('$user_id', 'NONE', '$now', 'Password hash match error', '$clientip')");
+                    $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+                    $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                                    VALUES (NULL, '$user_id', 'NONE', '$now', 'Password hash match error', '$clientip')");
                     return false;
                 }
             } else {
                 //notloggedin
                 $now = time();
-                $mysqli->query("INSERT INTO syslog(user_id, username, time, reason, clientip)
-                                VALUES ('$user_id', 'NONE', '$now', 'Password hash match error', '$clientip')");
+                $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+                $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                                VALUES (NULL, '$user_id', 'NONE', '$now', 'Password hash match error', '$clientip')");
                 return false;
             }
         } else {
             //notloggedin
             $now = time();
-            $mysqli->query("INSERT INTO syslog(user_id, username, time, reason, clientip)
-                            VALUES ('$user_id', 'NONE', '$now', 'User match error', '$clientip')");
+            $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+            $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                            VALUES (NULL, '$user_id', 'NONE', '$now', 'User match error', '$clientip')");
             return false;
         }
     } else {
         //notloggedin
         $now = time();
-        $mysqli->query("INSERT INTO syslog(user_id, username, time, reason, clientip)
-                        VALUES ('NOUSER', 'NONE', '$now', 'Session variables not set', '$clientip')");
+        $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                        VALUES (NULL, 0, 'NONE', '$now', 'Session variables not set', '$clientip')");
         return false;
     }
 }
@@ -173,29 +194,32 @@ function remote_login_check($mysqli, $uid, $uname, $lstring, $ubrowser) {
                 } else {
                     //notloggedin
                     $now = time();
-                    $mysqli->query("INSERT INTO syslog(user_id, time, reason, clientip)
-                                    VALUES ('$uid', '$now', 'Password hash match error', '$clientip')");
+                    $uid = preg_replace("/[^0-9]+/", "", $uid);
+                    $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                                    VALUES (NULL, '$uid', 'NONE', '$now', 'Password hash match error', '$clientip')");
                     return false;
                 }
             } else {
                 //notloggedin
                 $now = time();
-                $mysqli->query("INSERT INTO syslog(user_id, time, reason, clientip)
-                                VALUES ('$uid', '$now', 'Password hash match error', '$clientip')");
+                $uid = preg_replace("/[^0-9]+/", "", $uid);
+                $mysqli->query("INSERT INTO syslog(event, user_id, time, reason, clientip)
+                                VALUES (NULL, '$uid', 'NONE', '$now', 'Password hash match error', '$clientip')");
                 return false;
             }
         } else {
             //notloggedin
             $now = time();
-            $mysqli->query("INSERT INTO syslog(user_id, time, reason, clientip)
-                            VALUES ('$uid', '$now', 'User match error', '$clientip')");
+            $uid = preg_replace("/[^0-9]+/", "", $uid);
+            $mysqli->query("INSERT INTO syslog(event, user_id, time, reason, clientip)
+                            VALUES (NULL, '$uid', 'NONE', '$now', 'User match error', '$clientip')");
             return false;
         }
     } else {
         //notloggedin
         $now = time();
-        $mysqli->query("INSERT INTO syslog(user_id, time, reason, clientip)
-                        VALUES ('NOUSER', '$now', 'Session variables not set', '$clientip')");
+        $mysqli->query("INSERT INTO syslog(event, user_id, time, reason, clientip)
+                        VALUES (NULL, 0, 'NONE', '$now', 'Session variables not set', '$clientip')");
         return false;
     }
 }
