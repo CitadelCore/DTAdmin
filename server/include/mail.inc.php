@@ -36,6 +36,7 @@ function sendAccountVerifiedMail($mysqli, $userid) {
   $htmlbody = "
   <html>
   <head>
+  <link href=\"https://fonts.googleapis.com/css?family=Roboto\" rel=\"stylesheet\">
   <title>Account verified</title>
   </head>
   <body>
