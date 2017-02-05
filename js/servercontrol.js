@@ -25,6 +25,8 @@ function postReady(){
      } else {
      console.log("Max retries reached, aborting connection.");
      clearInterval(dataTimer);
+     $('#loadModal').modal('hide');
+     $('#errorModal').modal('show');
      backendReady = false;
      }
     }

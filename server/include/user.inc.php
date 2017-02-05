@@ -154,18 +154,32 @@ function checkPasswordHashExists($mysqli, $passwordhash) {
 
 function updateUserProfile($mysqli, $userid, $updatedata) {
 if (isset($updatedata["passwordhash"])) { updateUserProfileData($mysqli, $userid, "password", htmlspecialchars($updatedata["passwordhash"])); }
+if (isset($updatedata["username"])) { updateUserProfileData($mysqli, $userid, "userid", htmlspecialchars($updatedata["username"])); }
 if (isset($updatedata["firstname"])) { updateUserProfileData($mysqli, $userid, "firstname", htmlspecialchars($updatedata["firstname"])); }
 if (isset($updatedata["lastname"])) { updateUserProfileData($mysqli, $userid, "lastname", htmlspecialchars($updatedata["lastname"])); }
-if (isset($updatedata["email"])) { updateUserProfileData($mysqli, $userid, "email", htmlspecialchars($updatedata["email"])); }
+if (isset($updatedata["email"])) { if(verifyUpdateEmail($updatedata["email"]) == true) { updateUserProfileData($mysqli, $userid, "email", htmlspecialchars($updatedata["email"])); }}
 if (isset($updatedata["disabled"])) { updateUserProfileData($mysqli, $userid, "disabled", htmlspecialchars($updatedata["disabled"])); }
 if (isset($updatedata["permissionlevel"])) { updateUserProfileData($mysqli, $userid, "permissionlevel", htmlspecialchars($updatedata["permissionlevel"])); }
 }
 
+function verifyUpdateEmail($address) {
+  $split = explode("@", $address);
+  if (count($split) == 1) {
+    return false;
+  } else {
+    if ($split[1] == "towerdevs.xyz") {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
 function updateUserProfileData($mysqli, $userid, $varname, $vardata) {
   if ($stmt = $mysqli->prepare("UPDATE members
-                                SET $varname='$vardata'
+                                SET $varname=?
                                 WHERE id=?")) {
-    $stmt->bind_param('i', $userid);
+    $stmt->bind_param('si', $vardata, $userid);
     $stmt->execute();
     $stmt->store_result();
     return true;
@@ -182,30 +196,44 @@ function createUserProfile($mysqli, $createdata) {
   $email = $createdata["email"];
   $disabled = $createdata["disabled"];
   $permissionlevel = "user";
-  // Final conflict checking, just in case.
-  if(checkPasswordHashExists($mysqli, $updatedata["passwordhash"]) == false) {
-    if(checkEmailExists($mysqli, $updatedata["email"]) == false) {
-      if(checkUsernameExists($mysqli, $updatedata["username"]) == false) {
-        if ($stmt = $mysqli->prepare("INSERT INTO members
-                                      VALUES (NULL, '$username', '$passwordhash', '$permissionlevel', '$firstname', '$lastname', '$email', '$disabled')")) {
-          $stmt->execute();
-          $stmt->store_result();
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
+  if(test_data($passwordhash) == true) {
+    if(test_data($username) == true) {
+      if(test_data($firstname) == true) {
+        if(test_data($lastname) == true) {
+          if(test_data($email) == true) {
+            if(test_data($disabled) == true) {
+              // Final conflict checking, just in case.
+              if(checkPasswordHashExists($mysqli, $createdata["passwordhash"]) == false) {
+                if(checkEmailExists($mysqli, $createdata["email"]) == false) {
+                  if(checkUsernameExists($mysqli, $createdata["username"]) == false) {
+                    if ($stmt = $mysqli->prepare("INSERT INTO members
+                                                  VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)")) {
+                      $stmt->bind_param('ssssssi', $username, $passwordhash, $permissionlevel, $firstname, $lastname, $email, $disabled);
+                      $stmt->execute();
+                      $stmt->store_result();
+                      return true;
+                    } else {
+                      return false;
+                    }
+                  } else {
+                    return false;
+                  }
+                } else {
+                  return false;
+                }
+              } else {
+                return false;
+              }
+            } else {return false; }
+          } else {return false; }
+        } else {return false; }
+      } else { return false; }
+    } else { return false; }
+  } else {return false; }
 }
 
 function deleteUserProfile($mysqli, $userid) {
+  sendAccountDeletedMail($mysqli, $userid);
   deleteAllUserSecrets($mysqli, $userid);
   $statement = "SELECT * FROM members WHERE id='" . $userid . "' LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
@@ -219,6 +247,32 @@ function deleteUserProfile($mysqli, $userid) {
         }
       }
     }
+}
+
+function verifyUser($mysqli, $userid) {
+  sendAccountVerifiedMail($mysqli, $userid);
+  setUserDisabled($mysqli, $userid, 0);
+}
+
+function lockUser($mysqli, $userid, $lockedip) {
+  sendAccountLockedMail($mysqli, $userid, $lockedip);
+  setUserDisabled($mysqli, $userid, 1);
+}
+
+function disableUser($mysqli, $userid) {
+  setAccountDisabledMail($mysqli, $userid);
+  setUserDisabled($mysqli, $userid, 1);
+}
+
+function unlockUser($mysqli, $userid, $lockedip) {
+  sendAccountUnlockedMail($mysqli, $userid);
+  $mysqli->query("DELETE FROM login_attempts WHERE user_id = $userid");
+  setUserDisabled($mysqli, $userid, 0);
+}
+
+function enableUser($mysqli, $userid) {
+  setAccountEnabledMail($mysqli, $userid);
+  setUserDisabled($mysqli, $userid, 0);
 }
 
 function setUserDisabled($mysqli, $userid, $disabled) {

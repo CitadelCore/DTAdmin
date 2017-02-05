@@ -44,10 +44,11 @@ function login($userid, $password, $mysqli) {
         $stmt->fetch();
 
         if ($stmt->num_rows == 1) {
-
+          if (getUserFromUserID($mysqli, $user_id)['disabled'] == 0) {
             if (checkbrute($user_id, $mysqli) == true) {
+                lockUser($mysqli, $user_id, $clientip);
                 $errorreason = "lockedout";
-                return "lockedout"; // custom ajax action here
+                return "lockedout";
             } else {
                 if (password_verify($password, $db_password)) {
                      //correct pass
@@ -64,6 +65,7 @@ function login($userid, $password, $mysqli) {
                     $now = time();
                     $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
                                     VALUES (NULL, '$user_id', '$username', '$now', 'Administrator logged in', '$clientip')");
+                    $mysqli->query("DELETE FROM login_attempts WHERE user_id = $user_id");
                     return "correctuser";
                 } else {
                     $now = time();
@@ -84,6 +86,22 @@ function login($userid, $password, $mysqli) {
                     return "incorrectpass";
                 }
             }
+          } else {
+            $now = time();
+            $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+            $username = preg_replace("/[^a-zA-Z0-9_\-]+/",
+                                                        "",
+                                                        $username);
+            $errorreason = "lockedout";
+            $now = time();
+            $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+            $username = preg_replace("/[^a-zA-Z0-9_\-]+/",
+                                                        "",
+                                                        $username);
+            $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                            VALUES (NULL, '$user_id', '$username', '$now', 'Login attempt while disabled', '$clientip')");
+            return "lockedout";
+          }
         } else {
             // No user exists.
             $errorreason = "usernotexist";
@@ -135,12 +153,11 @@ function login_check($mysqli) {
             $stmt->store_result();
 
             if ($stmt->num_rows == 1) {
+              if (getUserFromUserID($mysqli, $user_id)['disabled'] == 0) {
                 $stmt->bind_result($password);
                 $stmt->fetch();
                 $login_check = hash('sha512', $password . $user_browser);
                 if (hash_equals($login_check, $login_string) ){
-                    //loggedin
-                    sendAccountVerifiedMail($mysqli, $user_id);
                     return true;
                 } else {
                     //notloggedin
@@ -150,12 +167,19 @@ function login_check($mysqli) {
                                     VALUES (NULL, '$user_id', 'NONE', '$now', 'Password hash match error', '$clientip')");
                     return false;
                 }
+              } else {
+                $now = time();
+                $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+                $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                                VALUES (NULL, '$user_id', 'NONE', '$now', 'Login attempt while disabled', '$clientip')");
+                    return false;
+              }
             } else {
                 //notloggedin
                 $now = time();
                 $user_id = preg_replace("/[^0-9]+/", "", $user_id);
                 $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
-                                VALUES (NULL, '$user_id', 'NONE', '$now', 'Password hash match error', '$clientip')");
+                                VALUES (NULL, '$user_id', 'NONE', '$now', 'User not found', '$clientip')");
                 return false;
             }
         } else {
@@ -163,7 +187,7 @@ function login_check($mysqli) {
             $now = time();
             $user_id = preg_replace("/[^0-9]+/", "", $user_id);
             $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
-                            VALUES (NULL, '$user_id', 'NONE', '$now', 'User match error', '$clientip')");
+                            VALUES (NULL, '$user_id', 'NONE', '$now', 'Query error', '$clientip')");
             return false;
         }
     } else {
@@ -185,6 +209,7 @@ function remote_login_check($mysqli, $uid, $uname, $lstring, $ubrowser) {
             $stmt->execute();
             $stmt->store_result();
             if ($stmt->num_rows == 1) {
+              if (getUserFromUserID($mysqli, $user_id)['disabled'] == 0) {
                 $stmt->bind_result($password);
                 $stmt->fetch();
                 $login_check = hash('sha512', $password . $ubrowser);
@@ -199,12 +224,19 @@ function remote_login_check($mysqli, $uid, $uname, $lstring, $ubrowser) {
                                     VALUES (NULL, '$uid', 'NONE', '$now', 'Password hash match error', '$clientip')");
                     return false;
                 }
+              } else {
+                $now = time();
+                $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+                $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                                VALUES (NULL, '$user_id', 'NONE', '$now', 'Login attempt while disabled', '$clientip')");
+                    return false;
+              }
             } else {
                 //notloggedin
                 $now = time();
                 $uid = preg_replace("/[^0-9]+/", "", $uid);
                 $mysqli->query("INSERT INTO syslog(event, user_id, time, reason, clientip)
-                                VALUES (NULL, '$uid', 'NONE', '$now', 'Password hash match error', '$clientip')");
+                                VALUES (NULL, '$uid', 'NONE', '$now', 'User not found', '$clientip')");
                 return false;
             }
         } else {
@@ -212,7 +244,7 @@ function remote_login_check($mysqli, $uid, $uname, $lstring, $ubrowser) {
             $now = time();
             $uid = preg_replace("/[^0-9]+/", "", $uid);
             $mysqli->query("INSERT INTO syslog(event, user_id, time, reason, clientip)
-                            VALUES (NULL, '$uid', 'NONE', '$now', 'User match error', '$clientip')");
+                            VALUES (NULL, '$uid', 'NONE', '$now', 'Query error', '$clientip')");
             return false;
         }
     } else {

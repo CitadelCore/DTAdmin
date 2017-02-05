@@ -10,3 +10,4 @@ jQuery: http://jquery.com/
 SB Admin 2: https://github.com/BlackrockDigital/startbootstrap-sb-admin-2/
 ### LGPL Licensed
 PHP Source Query: https://github.com/xPaw/PHP-Source-Query
+PHPMailer: https://github.com/Synchro/PHPMailer

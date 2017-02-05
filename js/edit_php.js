@@ -19,9 +19,28 @@ function submitProfileEditForm() {
   $('#passwordConfirmModal').modal('show');
 }
 
+function confirmProfileEditForm() {
+  var formemail = document.forms["profileedit"]["email"].value;
+  var formfirstname = document.forms["profileedit"]["firstname"].value;
+  var formlastname = document.forms["profileedit"]["lastname"].value;
+  var passconfirm = sha512(document.forms["checkpointForm"]["cppassword"].value);
+  returndata = $.post('server/backend.php', {command: 'UPDATEUSERPROFILE', email: formemail, firstname: formfirstname, lastname: formlastname, passconfirm: passconfirm}, function(returnedData) {
+   if (returnedData == "210A") {
+    $('#passwordConfirmModal').modal('hide');
+    location.reload();
+   } else if (returnedData == "570A") {
+    cperrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
+   } else if (returnedData == "580A") {
+    cperrorblock.innerHTML = "<p style=\"color:red\">Incorrect password.</p>";
+   } else {
+    cperrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+   }
+ })
+}
+
 function submitAccountDeleteForm() {
-  var deleteusername = document.forms["accountDeleteForm"]["deleteusername"]
-  var deletepassword = document.forms["accountDeleteForm"]["deletepassword"]
+  var deleteusername = document.forms["accountDeleteForm"]["deleteusername"].value;
+  var deletepassword = document.forms["accountDeleteForm"]["deletepassword"].value;
 }
 
 function openPasswordChangeModal() {

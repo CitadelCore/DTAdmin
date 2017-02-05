@@ -54,6 +54,24 @@
   </div>
 </div>
 
+<div id="errorModal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Error</h4>
+      </div>
+      <div class="modal-body">
+        <p style='color:red'>There was an error connecting to the backend. Please try again later.</p>
+        <br>
+        <a href="mailto:support@towerdevs.xyz">Contact support</a>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
     	  <div class="modal-dialog">
 				<div class="loginmodal-container">

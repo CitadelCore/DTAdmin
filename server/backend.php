@@ -124,6 +124,9 @@ if ($postdata == "ISREADY") {
     // Param error
     echo "200E";
   }
+
+// Secret key operations
+
   } elseif ($postdata == "DELETESECRETKEY") {
    if(isset($_POST['secretid'], $_POST['userid'])) {
      $secretid = $_POST['secretid'];
@@ -148,13 +151,21 @@ elseif ($postdata == "CREATESECRETKEY") {
     echo "570A"; // Not logged in
  }
  } elseif ($postdata == "UPDATEUSERPROFILE") {
-    $updatedata = $_POST['updatedata'];
+
    if (login_check($mysqli) == true) {
-   updateUserProfile($mysqli, $updatedata, $_SESSION['user_id']);
+    if (password_verify($_POST['passconfirm'], getUserFromUserID($mysqli, $_SESSION['user_id'])['password']) == true) {
+     if(isset($_POST['email'])) { $email = $_POST['email']; updateUserProfile($mysqli, $_SESSION['user_id'], array("email"=>$email)); }
+     if(isset($_POST['firstname'])) { $firstname = $_POST['firstname']; updateUserProfile($mysqli, $_SESSION['user_id'], array("firstname"=>$firstname)); }
+     if(isset($_POST['lastname'])) { $lastname = $_POST['lastname']; updateUserProfile($mysqli, $_SESSION['user_id'], array("lastname"=>$lastname)); }
+     if(isset($_POST['passwordhash'])) { $passwordhash = $_POST['passwordhash']; updateUserProfile($mysqli, $_SESSION['user_id'], array("passwordhash"=>$passwordhash)); }
+     if(isset($_POST['username'])) { if (checkUserHasPermission($mysqli, $userid, "canmodifyusers") == true) { $username = $_POST['username']; updateUserProfile($mysqli, $_SESSION['user_id'], array("username"=>$username)); }}
      echo "210A"; // Success
    } else {
-     echo "570A"; // Not logged in
+     echo "580A"; // Password dosen't match
   }
+} else {
+  echo "570A"; // Not logged in
+}
 } else {
   echo "300A";
 }
