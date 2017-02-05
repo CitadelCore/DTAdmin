@@ -80,7 +80,7 @@ function getUserFromUserID($mysqli, $id) {
       return false;
     }
   } else {
-    return $mysqli->error;
+    return false;
   }
 }
 

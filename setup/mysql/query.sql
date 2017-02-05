@@ -40,6 +40,16 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`servers` (
     `rconpassword` VARCHAR(30) NOT NULL,
     `dtqueryseckey` VARCHAR(50) NOT NULL
 );
+CREATE TABLE IF NOT EXISTS `dtadmin`.`mailserver` (
+    `serverid` INT(1) NOT NULL,
+    `hostname` VARCHAR(30) NOT NULL,
+    `sslenabled` BOOLEAN NOT NULL,
+    `autossl` BOOLEAN NOT NULL,
+    `port` INT(10) NOT NULL,
+    `authenticated` BOOLEAN NOT NULL,
+    `username` VARCHAR(30) NOT NULL,
+    `password` VARCHAR(30) NOT NULL
+);
 CREATE TABLE IF NOT EXISTS `dtadmin`.`bans` (
     `banid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `serverid` INT(10) NOT NULL,
@@ -113,8 +123,9 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`usersecrets` (
     `note` TEXT NOT NULL,
     `timecreated` DATETIME NOT NULL
 );
-INSERT INTO `dtadmin`.`members` VALUES(1, 'josephmarsden', '$2y$10$lHRotbIKh8sdPiZyE7GtVOjZThiSDDBSPbBzjXezehpFxJbj7Vthu', 'root', 'Joseph', 'Marsden', 'josephmarsden@towerdevs.xyz', '0');
-INSERT INTO `dtadmin`.`usersecrets` VALUES(1, 1, 'jH8jdh27j83k5p2ha', 'TestNote', '0000-00-00');
+--INSERT INTO `dtadmin`.`members` VALUES(1, 'josephmarsden', '$2y$10$lHRotbIKh8sdPiZyE7GtVOjZThiSDDBSPbBzjXezehpFxJbj7Vthu', 'root', 'Joseph', 'Marsden', 'josephmarsden@towerdevs.xyz', '0');
+--INSERT INTO `dtadmin`.`usersecrets` VALUES(1, 1, 'jH8jdh27j83k5p2ha', 'TestNote', '0000-00-00');
+--INSERT INTO `dtadmin`.`mailserver` VALUES(1, 'server.example.com', 0, 0, 587, 1, 'example', 'example');
 
 INSERT INTO `dtadmin`.`usergroups` VALUES(1, 'root', 'employee', 'nosuperior', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
 INSERT INTO `dtadmin`.`usergroups` VALUES(2, 'employee', 'developer', 'root', 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0);

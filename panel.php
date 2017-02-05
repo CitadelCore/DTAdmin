@@ -227,6 +227,7 @@ sec_session_start();
                                     <i class="fa fa-tasks fa-5x"></i>
                                 </div>
                                 <div class="col-xs-9 text-right">
+                                    <?php sendAccountVerifiedMail($mysqli, 1); ?>
                                     <div class="huge"><?php echo getOnlineServers($mysqli); ?></div>
                                     <div>Running Server<?php if (getOnlineServers($mysqli) != 1) { echo "s"; } ?></div>
                                 </div>
