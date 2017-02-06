@@ -225,17 +225,17 @@ sec_session_start();
                                 <div class="col-lg-6">
                                   <div class="form-group">
                                       <label>First Name</label>
-                                      <input class="form-control" id="firstname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="<?php echo $firstname; ?>" required>
+                                      <input class="form-control" id="firstname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="<?php echo $firstname; ?>" value="<?php echo $firstname; ?>" required>
                                       <p class="help-block">Your legal first name.</p>
                                   </div>
                                   <div class="form-group">
                                       <label>Last Name</label>
-                                      <input class="form-control" id="lastname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="<?php echo $lastname; ?>" required>
+                                      <input class="form-control" id="lastname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="<?php echo $lastname; ?>" value="<?php echo $lastname; ?>" required>
                                       <p class="help-block">Your legal last name.</p>
                                   </div>
                                   <div class="form-group">
                                       <label>Email Address</label>
-                                      <input class="form-control" id="email" data-minlength="7" pattern="^[_A-z0-9]{1,}$@" maxlength="30" placeholder="<?php echo $email; ?>" required>
+                                      <input class="form-control" id="email" data-minlength="7" pattern="^[_A-z0-9]{1,}$@" maxlength="30" placeholder="<?php echo $email; ?>" value="<?php echo $email; ?>" required>
                                       <p class="help-block">For sending alerts. Only @towerdevs.xyz addresses are allowed.</p>
                                   </div>
                               </form>

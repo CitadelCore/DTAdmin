@@ -27,7 +27,7 @@ function confirmProfileEditForm() {
   returndata = $.post('server/backend.php', {command: 'UPDATEUSERPROFILE', email: formemail, firstname: formfirstname, lastname: formlastname, passconfirm: passconfirm}, function(returnedData) {
    if (returnedData == "210A") {
     $('#passwordConfirmModal').modal('hide');
-    window.location.href = "login.php?signoutreason=Your+account+has+been+deleted.";
+    location.reload();
    } else if (returnedData == "570A") {
     cperrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
    } else if (returnedData == "580A") {
@@ -39,7 +39,7 @@ function confirmProfileEditForm() {
 }
 
 function submitAccountDeleteForm() {
-  $('#accountDeleteModal').modal('show');
+  confirmAccountDeleteForm();
 }
 
 function confirmAccountDeleteForm() {
@@ -48,7 +48,7 @@ function confirmAccountDeleteForm() {
   returndata = $.post('server/backend.php', {command: 'DELETEUSERPROFILE', deleteusername: deleteusername, deletepassword: deletepassword}, function(returnedData) {
     if (returnedData == "210A") {
      $('#passwordConfirmModal').modal('hide');
-     location.reload();
+     window.location.href = "login.php?signoutreason=Your+account+has+been+deleted.";
     } else if (returnedData == "570A") {
      removeerrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
     } else if (returnedData == "580A") {
