@@ -27,7 +27,7 @@ function confirmProfileEditForm() {
   returndata = $.post('server/backend.php', {command: 'UPDATEUSERPROFILE', email: formemail, firstname: formfirstname, lastname: formlastname, passconfirm: passconfirm}, function(returnedData) {
    if (returnedData == "210A") {
     $('#passwordConfirmModal').modal('hide');
-    location.reload();
+    window.location.href = "login.php?signoutreason=Your+account+has+been+deleted.";
    } else if (returnedData == "570A") {
     cperrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
    } else if (returnedData == "580A") {
@@ -39,8 +39,26 @@ function confirmProfileEditForm() {
 }
 
 function submitAccountDeleteForm() {
+  $('#accountDeleteModal').modal('show');
+}
+
+function confirmAccountDeleteForm() {
   var deleteusername = document.forms["accountDeleteForm"]["deleteusername"].value;
-  var deletepassword = document.forms["accountDeleteForm"]["deletepassword"].value;
+  var deletepassword = sha512(document.forms["accountDeleteForm"]["deletepassword"].value);
+  returndata = $.post('server/backend.php', {command: 'DELETEUSERPROFILE', deleteusername: deleteusername, deletepassword: deletepassword}, function(returnedData) {
+    if (returnedData == "210A") {
+     $('#passwordConfirmModal').modal('hide');
+     location.reload();
+    } else if (returnedData == "570A") {
+     removeerrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
+    } else if (returnedData == "580A") {
+     removeerrorblock.innerHTML = "<p style=\"color:red\">Incorrect password.</p>";
+    } else if (returnedData == "710A") {
+    removeerrorblock.innerHTML = "<p style=\"color:red\">Incorrect username.</p>";
+    } else {
+     removeerrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+    }
+  })
 }
 
 function openPasswordChangeModal() {
@@ -80,6 +98,8 @@ function deleteSecretKey(secretid2, userid2) {
       location.reload();
     } else if (returnedData == "570A") {
       deleteerrorblock.innerHTML = "<p style=\"color:red\">You're not logged in.</p>";
+    } else if (returnedData == "620A") {
+      createerrorblock.innerHTML = "<p style=\"color:red\">You don't have permission to create or delete keys.</p>";
     } else {
       deleteerrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
     }
@@ -94,6 +114,8 @@ function submitKeyCreateForm() {
       location.reload();
     } else if (returnedData == "570A") {
       createerrorblock.innerHTML = "<p style=\"color:red\">You're not logged in.</p>";
+    } else if (returnedData == "620A") {
+      createerrorblock.innerHTML = "<p style=\"color:red\">You don't have permission to create or delete keys.</p>";
     } else {
       createerrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
       console.log(returnedData);

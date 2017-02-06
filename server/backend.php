@@ -132,8 +132,12 @@ if ($postdata == "ISREADY") {
      $secretid = $_POST['secretid'];
      $userid = $_POST['userid'];
     if (login_check($mysqli) == true) {
-    deleteUserSecret($mysqli, $secretid, $userid);
-      echo "210A"; // Success
+      if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmanagedtquerykey") == true) {
+        deleteUserSecret($mysqli, $secretid, $userid);
+        echo "210A"; // Success
+      } else {
+        echo "620A"; // No permission
+      }
     } else {
       echo "570A"; // Not logged in
    }
@@ -145,8 +149,12 @@ if ($postdata == "ISREADY") {
 elseif ($postdata == "CREATESECRETKEY") {
    $keynote = $_POST['keynote'];
   if (login_check($mysqli) == true) {
-  createUserSecret($mysqli, $keynote, $_SESSION['user_id']);
-    echo "210A"; // Success
+    if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmanagedtquerykey") == true) {
+      createUserSecret($mysqli, $keynote, $_SESSION['user_id']);
+      echo "210A"; // Success
+    } else {
+      echo "620A"; // No permission
+    }
   } else {
     echo "570A"; // Not logged in
  }
@@ -165,6 +173,22 @@ elseif ($postdata == "CREATESECRETKEY") {
   }
 } else {
   echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "DELETEUSERPROFILE") {
+  if (login_check($mysqli) == true) {
+  if ($_POST['deleteusername'] == getUserFromUserID($mysqli, $_SESSION['user_id'])['userid']) {
+   if (password_verify($_POST['deletepassword'], getUserFromUserID($mysqli, $_SESSION['user_id'])['password']) == true) {
+    deleteUserProfile($mysqli, $_SESSION['user_id']);
+    echo "210A"; // Success
+  } else {
+    echo "580A"; // Password dosen't match
+ }
+ } else {
+   echo "710A"; // Incorrect username
+ }
+} else {
+ echo "570A"; // Not logged in
 }
 } else {
   echo "300A";

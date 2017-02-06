@@ -418,7 +418,7 @@ sec_session_start();
     <div class="modal-footer">
      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
      <button type="submit" class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Confirm deletion</button>
-     <div class="help-block with-errors" id="changeerrorblock"></div>
+     <div class="help-block with-errors" id="removeerrorblock"></div>
     </div>
   </form>
    </div>
@@ -465,7 +465,7 @@ sec_session_start();
   <script src="js/jquery-3.1.1.min.js"></script>
   <script type="text/javascript">
    $(document).ready(function(){
-       window.location.href = "login.php";
+       window.location.href = "login.php?signoutreason=Please+log+in.";
    });
 </script>
 </head>

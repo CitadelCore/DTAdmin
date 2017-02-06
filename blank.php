@@ -233,7 +233,7 @@ sec_session_start();
   <script src="js/jquery-3.1.1.min.js"></script>
   <script type="text/javascript">
    $(document).ready(function(){
-       window.location.href = "login.php";
+       window.location.href = "login.php?signoutreason=Please+log+in.";
    });
 </script>
 </head>
