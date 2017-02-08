@@ -29,6 +29,9 @@ if ($postdata == "ISREADY") {
           } elseif ($loginresult == "lockedout") {
               // Account locked out
               echo "540A";
+          } elseif ($loginresult == "ipbanned") {
+                // IP address banned
+                echo "540A";
           } else {
               // Other internal exception
               echo "550A";
@@ -145,8 +148,8 @@ if ($postdata == "ISREADY") {
   // Param error
   echo "200E";
   }
- }
-elseif ($postdata == "CREATESECRETKEY") {
+
+ } elseif ($postdata == "CREATESECRETKEY") {
    $keynote = $_POST['keynote'];
   if (login_check($mysqli) == true) {
     if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmanagedtquerykey") == true) {
@@ -158,8 +161,8 @@ elseif ($postdata == "CREATESECRETKEY") {
   } else {
     echo "570A"; // Not logged in
  }
- } elseif ($postdata == "UPDATEUSERPROFILE") {
 
+ } elseif ($postdata == "UPDATEUSERPROFILE") {
    if (login_check($mysqli) == true) {
     if (password_verify($_POST['passconfirm'], getUserFromUserID($mysqli, $_SESSION['user_id'])['password']) == true) {
      if(isset($_POST['email'])) { $email = $_POST['email']; updateUserProfile($mysqli, $_SESSION['user_id'], array("email"=>$email)); }
@@ -174,6 +177,37 @@ elseif ($postdata == "CREATESECRETKEY") {
 } else {
   echo "570A"; // Not logged in
 }
+
+} elseif ($postdata == "CREATEUSERPROFILE") {
+  if (ip_check_banned($mysqli) == false) {
+    if (isset($_POST['email']) && isset($_POST['firstname']) && isset($_POST['lastname']) && isset($_POST['passwordhash']) && isset($_POST['username'])) {
+      if (isset($_POST['invitecode'])) {
+        if (checkInviteValid($mysqli, $_POST['invitecode']) == "valid") {
+          if (createUserProfile($mysqli, array("passwordhash"=>password_hash($_POST['passwordhash'], PASSWORD_BCRYPT), "username"=>$_POST['username'], "email"=>$_POST['email'], "firstname"=>$_POST['firstname'], "lastname"=>$_POST['lastname'], "disabled"=>0)) == true) {
+           sendAccountAutoconfirmMail($mysqli, $_POST['email'], $_POST['firstname'], $_POST['lastname'], password_hash($_POST['passwordhash']));
+           echo "210A";
+          } else {
+           echo "830A";
+          }
+        } elseif (checkInviteValid($mysqli, $_POST['invitecode']) == "expired") {
+          echo "810A";
+        } else {
+          echo "820A";
+        }
+      } else {
+        if (createUserProfile($mysqli, array("passwordhash"=>password_hash($_POST['passwordhash'], PASSWORD_BCRYPT), "username"=>$_POST['username'], "email"=>$_POST['email'], "firstname"=>$_POST['firstname'], "lastname"=>$_POST['lastname'], "disabled"=>1)) == true) {
+         sendAccountWaitMail($mysqli, $_POST['email'], $_POST['firstname'], $_POST['lastname'], password_hash($_POST['passwordhash'], PASSWORD_BCRYPT));
+         echo "210A";
+        } else {
+         echo "830A";
+        }
+      }
+    } else {
+      echo "720A";
+    }
+  } else {
+    echo "540A";
+  }
 
 } elseif ($postdata == "DELETEUSERPROFILE") {
   if (login_check($mysqli) == true) {
@@ -190,11 +224,80 @@ elseif ($postdata == "CREATESECRETKEY") {
 } else {
  echo "570A"; // Not logged in
 }
+
+} elseif ($postdata == "DISABLEUSERPROFILE") {
+  if (login_check($mysqli) == true) {
+  if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
+   if ($_POST['userid'] != $_SESSION['user_id']) {
+    disableUser($mysqli, $_POST['userid']);
+    echo "210A"; // Success
+  } else {
+    echo "910A"; // Can't disable own profile!
+ }
+ } else {
+   echo "620A"; // Not authorized
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "ENABLEUSERPROFILE") {
+  if (login_check($mysqli) == true) {
+  if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
+   if ($_POST['userid'] != $_SESSION['user_id']) {
+    enableUser($mysqli, $_POST['userid']);
+    echo "210A"; // Success
+  } else {
+    echo "920A"; // Can't enable own profile!
+ }
+ } else {
+   echo "620A"; // Not authorized
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "LOCKUSERPROFILE") {
+  if (login_check($mysqli) == true) {
+  if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
+   if ($_POST['userid'] != $_SESSION['user_id']) {
+    //lockUser($mysqli, $_POST['userid']);
+    //echo "210A"; // Success
+    echo "620A";
+  } else {
+    echo "930A"; // Can't lock own profile!
+ }
+ } else {
+   echo "620A"; // Not authorized
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "UNLOCKUSERPROFILE") {
+  if (login_check($mysqli) == true) {
+  if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
+   if ($_POST['userid'] != $_SESSION['user_id']) {
+    unlockUser($mysqli, $_POST['userid']);
+    echo "210A"; // Success
+  } else {
+    echo "940A"; // Can't enable own profile!
+ }
+ } else {
+   echo "620A"; // Not authorized
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
 } else {
   echo "300A";
 }
+
 } else {
   http_response_code(405);
   echo "<h2>Method Not Allowed</h2>";
 }
+
+
 ?>

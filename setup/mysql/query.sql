@@ -123,6 +123,15 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`usersecrets` (
     `note` TEXT NOT NULL,
     `timecreated` DATETIME NOT NULL
 );
+CREATE TABLE IF NOT EXISTS `dtadmin`.`bannedips` (
+    `ipid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `ipaddress` VARCHAR(50) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS `dtadmin`.`userinvites` (
+    `inviteid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `expiry` VARCHAR(30) NOT NULL,
+    `securitycode` VARCHAR(30) NOT NULL
+);
 --INSERT INTO `dtadmin`.`members` VALUES(1, 'josephmarsden', '$2y$10$lHRotbIKh8sdPiZyE7GtVOjZThiSDDBSPbBzjXezehpFxJbj7Vthu', 'root', 'Joseph', 'Marsden', 'josephmarsden@towerdevs.xyz', '0');
 --INSERT INTO `dtadmin`.`usersecrets` VALUES(1, 1, 'jH8jdh27j83k5p2ha', 'TestNote', '0000-00-00');
 --INSERT INTO `dtadmin`.`mailserver` VALUES(1, 'server.example.com', 0, 0, 587, 1, 'example', 'example');

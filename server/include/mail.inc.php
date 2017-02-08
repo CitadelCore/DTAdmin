@@ -281,12 +281,9 @@ function sendAccountDeletedMail($mysqli, $userid) {
   mailToUser($mysqli, $email, $htmlbody, $nonhtmlbody, $subject, $firstname, $lastname);
 }
 
-function sendAccountWaitMail($mysqli, $userid) {
-  $userinfo = getUserFromUserID($mysqli, $userid);
-  $email = $userinfo["email"];
-  $firstname = $userinfo["firstname"];
-  $lastname = $userinfo["lastname"];
-  $ident = hashMailIdent($mysqli, $userid);
+function sendAccountWaitMail($mysqli, $email, $firstname, $lastname, $passwordhash) {
+  $passstring = $email . $firstname . $lastname . $passwordhash;
+  $ident = hash('crc32', $passstring);
   $subject = "Account pending verification";
   $htmlbody = "
   <html>
@@ -299,6 +296,42 @@ function sendAccountWaitMail($mysqli, $userid) {
   <h3>Your account is pending verification.</h3>
   Dear $firstname $lastname, your account has been created.
   However, your account must be verified by an administrator before you can log in. If this process takes more than 7 days, please contact <a href=\"mailto:support@towerdevs.xyz\">support@towerdevs.xyz</a> for more information.
+  Sincerely,
+  TOWER Administration Team
+  <br>
+  Message Ident: $ident
+  </div>
+  </body>
+  </html>
+  ";
+
+  $nonhtmlbody = "
+  Dear $firstname $lastname, your account has been created.
+  However, your account must be verified by an administrator before you can log in. If this process takes more than 7 days, please contact <a href=\"mailto:support@towerdevs.xyz\">support@towerdevs.xyz</a> for more information.
+  Sincerely,
+  TOWER Administration Team
+
+  Message Ident: $ident
+  ";
+
+  mailToUser($mysqli, $email, $htmlbody, $nonhtmlbody, $subject, $firstname, $lastname);
+}
+
+function sendAccountAutoconfirmMail($mysqli, $email, $firstname, $lastname, $passwordhash) {
+  $passstring = $email . $firstname . $lastname . $passwordhash;
+  $ident = hash('crc32', $passstring);
+  $subject = "Account created";
+  $htmlbody = "
+  <html>
+  <head>
+  <link href=\"https://fonts.googleapis.com/css?family=Roboto\" rel=\"stylesheet\">
+  <title>Account created</title>
+  </head>
+  <body>
+  <div style=\"font-family: 'Roboto', sans-serif;\">
+  <h3>Your account has been created.</h3>
+  Dear $firstname $lastname, your account has been created.
+  Since you provided a Invite Key at signup, your account has been auto-confirmed. You may now log in with your username and password.
   Sincerely,
   TOWER Administration Team
   <br>

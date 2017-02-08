@@ -15,7 +15,7 @@ sec_session_start();
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>TOWER DTAdmin 1.2</title>
+    <title>TOWER DTAdmin <?php echo $release; ?> <?php if ($devmode == true) { echo "Developer"; }?></title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -32,6 +32,7 @@ sec_session_start();
     <!-- Custom Fonts -->
     <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -54,7 +55,7 @@ sec_session_start();
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">TOWER DTAdmin 1.2 Developer</a>
+                <a class="navbar-brand" href="index.html">TOWER DTAdmin <?php echo $release; ?> <?php if ($devmode == true) { echo "Developer"; }?></a>
             </div>
             <!-- /.navbar-header -->
 

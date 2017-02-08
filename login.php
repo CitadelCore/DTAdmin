@@ -11,6 +11,7 @@
    <script src="js/validator.min.js"></script>
    <script src="js/sha512.min.js"></script>
    <script src="js/servercontrol.js"></script>
+   <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
    <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css">
    <script type="text/javascript">
     $(document).ready(function(){
@@ -94,7 +95,7 @@
 				  </form>
 
 				  <div class="login-help">
-					<a href="mailto:support@towerdevs.xyz">Contact Support</a> - <a href="forgot.php">Forgot Password?</a><br>
+					<a href="mailto:support@towerdevs.xyz">Contact Support</a> - <a href="forgot.php">Forgot Password?</a> - <a href="signup.php">Register</a><br>
           This is a private server. Attempting to gain unauthorized entry may be a criminal offence. Your IP address, <?php echo $_SERVER['REMOTE_ADDR']; ?>, has been logged in our database.
 				  </div>
 				</div>

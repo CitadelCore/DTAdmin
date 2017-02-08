@@ -24,7 +24,7 @@ function confirmProfileEditForm() {
   var formfirstname = document.forms["profileedit"]["firstname"].value;
   var formlastname = document.forms["profileedit"]["lastname"].value;
   var passconfirm = sha512(document.forms["checkpointForm"]["cppassword"].value);
-  returndata = $.post('server/backend.php', {command: 'UPDATEUSERPROFILE', email: formemail, firstname: formfirstname, lastname: formlastname, passconfirm: passconfirm}, function(returnedData) {
+  $.post('server/backend.php', {command: 'UPDATEUSERPROFILE', email: formemail, firstname: formfirstname, lastname: formlastname, passconfirm: passconfirm}, function(returnedData) {
    if (returnedData == "210A") {
     $('#passwordConfirmModal').modal('hide');
     location.reload();
@@ -45,7 +45,7 @@ function submitAccountDeleteForm() {
 function confirmAccountDeleteForm() {
   var deleteusername = document.forms["accountDeleteForm"]["deleteusername"].value;
   var deletepassword = sha512(document.forms["accountDeleteForm"]["deletepassword"].value);
-  returndata = $.post('server/backend.php', {command: 'DELETEUSERPROFILE', deleteusername: deleteusername, deletepassword: deletepassword}, function(returnedData) {
+  $.post('server/backend.php', {command: 'DELETEUSERPROFILE', deleteusername: deleteusername, deletepassword: deletepassword}, function(returnedData) {
     if (returnedData == "210A") {
      $('#passwordConfirmModal').modal('hide');
      window.location.href = "login.php?signoutreason=Your+account+has+been+deleted.";

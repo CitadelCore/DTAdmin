@@ -32,6 +32,8 @@ sec_session_start();
     <!-- Custom Fonts -->
     <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -219,7 +221,7 @@ sec_session_start();
                       $stmt->bind_result($id, $userid, $permissionlevel, $firstname, $lastname, $email, $disabled);
                       while($row = $stmt->fetch()) { ?>
                        <tr>
-                        <td><a href="edit.php?task=edituser&amp;userid=<?php echo $id ?>"><button type="button" class="btn btn-primary"><i class="fa fa-pencil fa-fw"></i>Edit</button></a>         <a href="#" onclick="disableUserById(<?php echo $userid ?>)"><button type="button" class="btn btn-warning"><i class="fa fa-ban fa-fw"></i>Disable</button></a>        <a href="#" onclick="deleteUserById(<?php echo $userid ?>)"><button type="button" class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Delete</button></a></td>
+                        <td><a href="edit.php?task=edituser&amp;userid=<?php echo $id ?>"><button type="button" class="btn btn-primary"><i class="fa fa-pencil fa-fw"></i>Edit</button></a>         <?php if ($disabled == '0') { ?><a href="#" onclick="disableUserByID(<?php echo $id ?>)"><button type="button" class="btn btn-warning"><i class="fa fa-times fa-fw"></i>Disable</button></a>        <?php } else { ?><a href="#" onclick="enableUserByID(<?php echo $id ?>)"><button type="button" class="btn btn-success"><i class="fa fa-check fa-fw"></i>Enable</button></a>        <?php } ?><?php if ($disabled == '0') { ?><a href="#" onclick="lockUserByID(<?php echo $id ?>)"><button type="button" class="btn btn-warning"><i class="fa fa-lock fa-fw"></i>Lock</button></a>        <?php } else { ?><a href="#" onclick="unlockUserByID(<?php echo $id ?>)"><button type="button" class="btn btn-success"><i class="fa fa-unlock-alt fa-fw"></i>Unlock</button></a>        <?php } ?><a href="#" onclick="deleteUserById(<?php echo $id ?>)"><button type="button" class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Delete</button></a></td>
                         <td><?php echo $userid; ?></td>
                         <td><?php echo $email; ?></td>
                         <td><?php echo $firstname; ?></td>
@@ -229,6 +231,8 @@ sec_session_start();
                       </tr>
                      <?php } $stmt->close(); } ?>
                    </table>
+                   <p><strong>Protip:</strong> The account unlock button should only be used when an account is locked out due to too many incorrect password attempts. For anything else, use the account Enable and Disable buttons.</p>
+                   <p id="actionerrors"></p>
                 </div>
                   <!-- /.row -->
               </div>
@@ -273,7 +277,7 @@ sec_session_start();
     <!-- Custom Theme JavaScript -->
     <script src="js/sb-admin-2.js"></script>
 
-    <script src="js/edit_php.js"></script>
+    <script src="js/users_php.js"></script>
 
 </body>
 <?php else : ?>
