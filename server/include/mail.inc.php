@@ -353,6 +353,88 @@ function sendAccountAutoconfirmMail($mysqli, $email, $firstname, $lastname, $pas
   mailToUser($mysqli, $email, $htmlbody, $nonhtmlbody, $subject, $firstname, $lastname);
 }
 
+function sendAccount2FAEnabledMail($mysqli, $userid) {
+  $userinfo = getUserFromUserID($mysqli, $userid);
+  $email = $userinfo["email"];
+  $firstname = $userinfo["firstname"];
+  $lastname = $userinfo["lastname"];
+  $ident = hashMailIdent($mysqli, $userid);
+  $subject = "Multi-Factor Enabled";
+  $htmlbody = "
+  <html>
+  <head>
+  <link href=\"https://fonts.googleapis.com/css?family=Roboto\" rel=\"stylesheet\">
+  <title>Multi-Factor Enabled</title>
+  </head>
+  <body>
+  <div style=\"font-family: 'Roboto', sans-serif;\">
+  <h3>Multi-Factor Enabled</h3>
+  Dear $firstname $lastname, multi-factor authentication has been enabled.
+  Somebody, either you or an administrator, has enabled multi-factor authentication on your account. If you performed this action, there's nothing more you need to do.
+  If you did not perform this action, please contact support@towerdevs.xyz immediately as your account may be compromised.
+  Sincerely,
+  TOWER Administration Team
+  <br>
+  Message Ident: $ident
+  </div>
+  </body>
+  </html>
+  ";
+
+  $nonhtmlbody = "
+  Dear $firstname $lastname, multi-factor authentication has been enabled.
+  Somebody, either you or an administrator, has enabled multi-factor authentication on your account. If you performed this action, there's nothing more you need to do.
+  If you did not perform this action, please contact support@towerdevs.xyz immediately as your account may be compromised.
+  Sincerely,
+  TOWER Administration Team
+
+  Message Ident: $ident
+  ";
+
+  mailToUser($mysqli, $email, $htmlbody, $nonhtmlbody, $subject, $firstname, $lastname);
+}
+
+function sendAccount2FADisabledMail($mysqli, $userid) {
+  $userinfo = getUserFromUserID($mysqli, $userid);
+  $email = $userinfo["email"];
+  $firstname = $userinfo["firstname"];
+  $lastname = $userinfo["lastname"];
+  $ident = hashMailIdent($mysqli, $userid);
+  $subject = "Multi-Factor Disabled";
+  $htmlbody = "
+  <html>
+  <head>
+  <link href=\"https://fonts.googleapis.com/css?family=Roboto\" rel=\"stylesheet\">
+  <title>Multi-Factor Disabled</title>
+  </head>
+  <body>
+  <div style=\"font-family: 'Roboto', sans-serif;\">
+  <h3>Multi-Factor Disabled</h3>
+  Dear $firstname $lastname, multi-factor authentication has been disabled.
+  Somebody, either you or an administrator, has disabled multi-factor authentication on your account. If you performed this action, there's nothing more you need to do.
+  If you did not perform this action, please contact support@towerdevs.xyz immediately as your account may be compromised.
+  Sincerely,
+  TOWER Administration Team
+  <br>
+  Message Ident: $ident
+  </div>
+  </body>
+  </html>
+  ";
+
+  $nonhtmlbody = "
+  Dear $firstname $lastname, multi-factor authentication has been disabled.
+  Somebody, either you or an administrator, has disabled multi-factor authentication on your account. If you performed this action, there's nothing more you need to do.
+  If you did not perform this action, please contact support@towerdevs.xyz immediately as your account may be compromised.
+  Sincerely,
+  TOWER Administration Team
+
+  Message Ident: $ident
+  ";
+
+  mailToUser($mysqli, $email, $htmlbody, $nonhtmlbody, $subject, $firstname, $lastname);
+}
+
 function hashMailIdent($mysqli, $userid) {
   $userinfo = getUserFromUserID($mysqli, $userid);
   $email = $userinfo["email"];

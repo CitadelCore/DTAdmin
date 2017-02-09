@@ -263,6 +263,7 @@ function createUserProfile($mysqli, $createdata) {
 }
 
 function deleteUserProfile($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   sendAccountDeletedMail($mysqli, $userid);
   deleteAllUserSecrets($mysqli, $userid);
   $statement = "SELECT * FROM members WHERE id='" . $userid . "' LIMIT 1";
@@ -280,24 +281,28 @@ function deleteUserProfile($mysqli, $userid) {
 }
 
 function verifyUser($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   setUserDisabled($mysqli, $userid, 0);
   //fastcgi_finish_request(); // won't work until FastCGI is installed
   sendAccountVerifiedMail($mysqli, $userid);
 }
 
 function lockUser($mysqli, $userid, $lockedip) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   setUserDisabled($mysqli, $userid, 1);
   //fastcgi_finish_request(); // won't work until FastCGI is installed
   sendAccountLockedMail($mysqli, $userid, $lockedip);
 }
 
 function disableUser($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   setUserDisabled($mysqli, $userid, 1);
   //fastcgi_finish_request(); // won't work until FastCGI is installed
   sendAccountDisabledMail($mysqli, $userid);
 }
 
 function unlockUser($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   setUserDisabled($mysqli, $userid, 0);
   $mysqli->query("DELETE FROM login_attempts WHERE user_id = $userid");
   //fastcgi_finish_request(); // won't work until FastCGI is installed
@@ -306,12 +311,14 @@ function unlockUser($mysqli, $userid) {
 }
 
 function enableUser($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   setUserDisabled($mysqli, $userid, 0);
   //fastcgi_finish_request(); // won't work until FastCGI is installed
   sendAccountEnabledMail($mysqli, $userid);
 }
 
 function setUserDisabled($mysqli, $userid, $disabled) {
+  $disabled= mysqli_real_escape_string($mysqli, $disabled);
   if ($stmt = $mysqli->prepare("UPDATE members
                                 SET disabled='$disabled'
                                 WHERE id=?")) {
@@ -327,6 +334,7 @@ function setUserDisabled($mysqli, $userid, $disabled) {
 // Multi Factor
 
 function createUser2FASecret($mysqli, $userid) {
+$userid = mysqli_real_escape_string($mysqli, $userid);
 $secure = random_bytes(256);
 $secure = Base32::encode($secure);
 $email = getUserFromUserID($mysqli, $userid)['email'];
@@ -347,6 +355,7 @@ $stmt = $mysqli->prepare("INSERT INTO 2fa VALUES (NULL, ?, ?, ?, ?)");
 }
 
 function verifyUser2FASecret($mysqli, $userid, $token) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
@@ -375,6 +384,7 @@ function verifyUser2FASecret($mysqli, $userid, $token) {
 }
 
 function getUser2FAEnabled($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
@@ -391,6 +401,7 @@ function getUser2FAEnabled($mysqli, $userid) {
 }
 
 function getUser2FAProvisioning($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
@@ -408,7 +419,26 @@ function getUser2FAProvisioning($mysqli, $userid) {
     }
 }
 
+function invalidateUser2FAToken($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
+  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  if ($stmt = $mysqli->prepare($statement)) {
+    $stmt->bind_param('i', $userid);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows == 1) {
+        $mysqli->query("DELETE FROM 2fa WHERE userid = $userid");
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+}
+
 function getUser2FAQrcode($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
   $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
@@ -424,6 +454,28 @@ function getUser2FAQrcode($mysqli, $userid) {
     } else {
       return false;
     }
+}
+
+function enableUser2FA($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
+  if (getUser2FAEnabled($mysqli, $userid) == false) {
+    createUser2FASecret($mysqli, $userid);
+    sendAccount2FAEnabledMail($mysqli, $userid);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function disableUser2FA($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
+  if (getUser2FAEnabled($mysqli, $userid) == true) {
+    invalidateUser2FAToken($mysqli, $userid);
+    sendAccount2FADisabledMail($mysqli, $userid);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 ?>
