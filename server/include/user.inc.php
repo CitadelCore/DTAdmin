@@ -348,7 +348,7 @@ $totp->setParameter('image', 'https://localhost/dtadmin/assets/logo.png');
 $tokenuri = $totp->getProvisioningUri();
 $qrcodeuri = $totp->getQrCodeUri();
 
-$stmt = $mysqli->prepare("INSERT INTO 2fa VALUES (NULL, ?, ?, ?, ?)");
+$stmt = $mysqli->prepare("INSERT INTO 2fa VALUES (NULL, ?, ?, ?, ?, 1)");
   $stmt->bind_param('isss', $userid, $secure, $tokenuri, $qrcodeuri);
   $stmt->execute();
   $stmt->store_result();
@@ -383,9 +383,26 @@ function verifyUser2FASecret($mysqli, $userid, $token) {
   }
 }
 
-function getUser2FAEnabled($mysqli, $userid) {
+function getUser2FAExists($mysqli, $userid) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
   $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  if ($stmt = $mysqli->prepare($statement)) {
+    $stmt->bind_param('i', $userid);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+function getUser2FAEnabled($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
+  $statement = "SELECT * FROM 2fa WHERE userid=? AND disabled=0 LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
     $stmt->execute();
@@ -456,11 +473,42 @@ function getUser2FAQrcode($mysqli, $userid) {
     }
 }
 
+function activateUser2FA($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
+  if (getUser2FAEnabled($mysqli, $userid) == false) {
+    invalidateUser2FAToken($mysqli, $userid);
+    createUser2FASecret($mysqli, $userid);
+    sendAccount2FAEnabledMail($mysqli, $userid);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function deactivateUser2FA($mysqli, $userid) {
+  $userid = mysqli_real_escape_string($mysqli, $userid);
+  if (getUser2FAEnabled($mysqli, $userid) == true) {
+    invalidateUser2FAToken($mysqli, $userid);
+    sendAccount2FADisabledMail($mysqli, $userid);
+    return true;
+  } else {
+    return false;
+  }
+}
+
 function enableUser2FA($mysqli, $userid) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
   if (getUser2FAEnabled($mysqli, $userid) == false) {
-    createUser2FASecret($mysqli, $userid);
-    sendAccount2FAEnabledMail($mysqli, $userid);
+    if ($stmt = $mysqli->prepare("UPDATE 2fa
+                                  SET disabled=0
+                                  WHERE id=?")) {
+      $stmt->bind_param('i', $userid);
+      $stmt->execute();
+      $stmt->store_result();
+      return true;
+    } else {
+      return false;
+    }
     return true;
   } else {
     return false;
@@ -470,8 +518,16 @@ function enableUser2FA($mysqli, $userid) {
 function disableUser2FA($mysqli, $userid) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
   if (getUser2FAEnabled($mysqli, $userid) == true) {
-    invalidateUser2FAToken($mysqli, $userid);
-    sendAccount2FADisabledMail($mysqli, $userid);
+    if ($stmt = $mysqli->prepare("UPDATE 2fa
+                                  SET disabled=1
+                                  WHERE id=?")) {
+      $stmt->bind_param('i', $userid);
+      $stmt->execute();
+      $stmt->store_result();
+      return true;
+    } else {
+      return false;
+    }
     return true;
   } else {
     return false;

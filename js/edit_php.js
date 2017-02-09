@@ -158,3 +158,126 @@ function submitCheckCommand() {
    console.log(returnedData);
   });
 }
+
+function open2FALoadingModal() {
+  $('#2FALoadingModal').modal('show');
+  $.post('server/backend.php', {command: 'CHECK2FASTATUS'}, function(returnedData) {
+    if (returnedData == "880A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:green\">Enforced</a>";
+    } else if (returnedData == "890A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:red\">Disabled</a>";
+    } else if (returnedData == "890B") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:yellow\">Pending</a>";
+    } else if (returnedData == "570A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:red\">Error retrieving data</a>";
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">You're not logged in.</p>";
+    } else {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:red\">Error retrieving data</a>";
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+      console.log(returnedData);
+    }
+  });
+}
+
+function open2FAStatusModal() {
+  $('#2FAStatusModal').modal('show');
+
+}
+
+function open2FAEnableModal() {
+  $('#2FAEnableModal').modal('show');
+}
+
+function submit2FAEnableModal() {
+  $.post('server/backend.php', {command: 'ENABLEUSER2FA'}, function(returnedData) {
+    if (returnedData == "210A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAConfirmModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:yellow\">Pending</a>";
+    } else if (returnedData == "570A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">You're not logged in.</p>";
+    } else if (returnedData == "840A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">2FA is already enabled.</p>";
+    } else {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+      console.log(returnedData);
+    }
+  });
+}
+
+function submit2FAEnableConfirmModal() {
+  var mfaconfirm = document.forms["2faconfirm"]["token"].value;
+  $.post('server/backend.php', {command: 'CONFIRMUSER2FA', token: mfaconfirm}, function(returnedData) {
+    if (returnedData == "210A") {
+      $('#2FAConfirmModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:green\">Enforced</a>";
+    } else if (returnedData == "570A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">You're not logged in.</p>";
+    } else if (returnedData == "870A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">Incorrect confirmation code.</p>";
+    } else if (returnedData == "860A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">Already confirmed.</p>";
+    } else {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+      console.log(returnedData);
+    }
+  });
+}
+
+function submit2FADisableConfirmModal() {
+  var mfaconfirm = document.forms["2fadisable"]["token"].value;
+  var passconfirm = sha512(document.forms["2fadisable"]["password"].value);
+  $.post('server/backend.php', {command: 'CONFIRMUSER2FA', token: mfaconfirm, password: passconfirm}, function(returnedData) {
+    if (returnedData == "210A") {
+      $('#2FAConfirmModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatusblock.innerHTML = "Status: <a style=\"color:red\">Disabled</a>";
+    } else if (returnedData == "570A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">You're not logged in.</p>";
+    } else if (returnedData == "870A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">Incorrect confirmation code.</p>";
+    } else if (returnedData == "890A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">2FA is not enabled.</p>";
+    } else if (returnedData == "580A") {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">Incorrect password.</p>";
+    } else {
+      $('#2FALoadingModal').modal('hide');
+      $('#2FAStatusModal').modal('show');
+      mfastatuserrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+      console.log(returnedData);
+    }
+  });
+}

@@ -222,7 +222,7 @@ sec_session_start();
                                   <button type="submit" class="btn btn-primary"><i class="fa fa-save fa-fw"></i>Update profile</button>
                                   <!--<button type="reset" class="btn btn-default" onclick="resetCreateForm()"><i class="fa fa-refresh fa-fw"></i>Reset form</button>-->
                                   <button type="button" class="btn btn-default" onclick="openPasswordChangeModal()"><i class="fa fa-key fa-fw"></i>Change password</button>
-                                  <?php if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) { ?><button type="button" class="btn btn-default" onclick="enableMultiFactor()"><i class="fa fa-mobile fa-fw"></i>Enable Multi-Factor</button><?php } else { ?><button type="button" class="btn btn-default" onclick="enableMultiFactor()"><i class="fa fa-mobile fa-fw"></i>Disable Multi-Factor</button><?php } ?>
+                                  <?php if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) { ?><button type="button" class="btn btn-default" onclick="open2FALoadingModal()"><i class="fa fa-mobile fa-fw"></i>Enable Multi-Factor</button><?php } else { ?><button type="button" class="btn btn-default" onclick="open2FALoadingModal()"><i class="fa fa-mobile fa-fw"></i>Disable Multi-Factor</button><?php } ?>
                                   <button type="button" class="btn btn-danger" onclick="openAccountDeleteModal()"><i class="fa fa-trash fa-fw"></i>Delete account</button>
                                 </div>
                                 <div class="col-lg-6">
@@ -424,6 +424,35 @@ sec_session_start();
      <div class="help-block with-errors" id="removeerrorblock"></div>
     </div>
   </form>
+   </div>
+  </div>
+ </div>
+
+ <div class="modal fade" id="2FALoadingModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog" role="document">
+   <div class="modal-content">
+    <div class="modal-header">
+     <h5 class="modal-title">Loading</h5>
+    </div>
+     <div class="modal-body">
+      <p>Please wait while DTAdmin loads your multi-factor preferences.</p>
+     </div>
+   </div>
+  </div>
+ </div>
+
+ <div class="modal fade" id="2FAStatusModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog" role="document">
+   <div class="modal-content">
+    <div class="modal-header">
+     <h5 class="modal-title">Multi-Factor Authentication</h5>
+    </div>
+     <div class="modal-body">
+      <p>Current status of the Multi-Factor service on your account</p>
+      <p id="mfastatusblock"></p>
+
+      <p id="mfastatuserrorblock"></p>
+     </div>
    </div>
   </div>
  </div>

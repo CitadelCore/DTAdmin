@@ -290,6 +290,75 @@ if ($postdata == "ISREADY") {
  echo "570A"; // Not logged in
 }
 
+} elseif ($postdata == "ENABLEUSER2FA") {
+  if (login_check($mysqli) == true) {
+  if (getUser2FAExists($mysqli, $_SESSION['user_id']) == false) {
+    activateUser2FA($mysqli, $_SESSION['user_id']);
+    echo json_encode(array("qrcode"=>getUser2FAQrcode($mysqli, $_SESSION['user_id']), "provisioningurl"=>getUser2FAProvisioning($mysqli, $_SESSION['user_id']))); // Success
+ } else {
+   echo "840A"; // 2FA already enabled
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "CONFIRMUSER2FA") {
+  if (login_check($mysqli) == true) {
+  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) {
+    if (isset($_POST['token'])) {
+      if (verifyUser2FASecret($mysqli, $userid, $_POST['token']) == true) {
+        enableUser2FA($mysqli, $_SESSION['user_id']);
+        echo "210A"; // Success
+      } else {
+        echo "870A"; // Incorrect confirm code
+      }
+    } else {
+      echo "720A"; // Not enough parameters
+    }
+ } else {
+   echo "860A"; // 2FA already confirmed
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "REMOVEUSER2FA") {
+  if (login_check($mysqli) == true) {
+  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) {
+    if (isset($_POST['token']) && isset($_POST['password'])) {
+      if (password_verify($_POST['password'], getUserFromUserID($mysqli, $_SESSION['user_id'])['password']) == true) {
+        if (verifyUser2FASecret($mysqli, $userid, $_POST['token']) == true) {
+          deactivateUser2FA($mysqli, $_SESSION['user_id']);
+          echo "210A"; // Success
+        } else {
+          echo "870A"; // Incorrect confirm code
+        }
+      } else {
+        echo "580A"; // Incorrect password
+      }
+    } else {
+      echo "720A"; // Not enough parameters
+    }
+ } else {
+   echo "890A"; // 2FA not enabled
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "CHECK2FASTATUS") {
+  if (login_check($mysqli) == true) {
+  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) {
+    echo "890A"; // 2FA is disabled
+  } elseif (getUser2FAExists($mysqli, $_SESSION['user_id']) == true) {
+    echo "890B"; // 2FA is pending
+  } else {
+    echo "880A"; // 2FA is enabled
+  }
+} else {
+ echo "570A"; // Not logged in
+}
+
 } else {
   echo "300A";
 }

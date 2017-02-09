@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`2fa` (
     `userid` INT NOT NULL,
     `sharedsecret` VARCHAR(100) NOT NULL,
     `tokenuri` VARCHAR(100) NOT NULL,
-    `qrcodeuri` VARCHAR(100) NOT NULL
+    `qrcodeuri` VARCHAR(100) NOT NULL,
+    `disabled` BOOLEAN NOT NULL
 )
 CREATE TABLE IF NOT EXISTS `dtadmin`.`login_attempts` (
     `user_id` INT(11) NOT NULL,
