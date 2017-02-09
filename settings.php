@@ -222,6 +222,7 @@ sec_session_start();
                                   <button type="submit" class="btn btn-primary"><i class="fa fa-save fa-fw"></i>Update profile</button>
                                   <!--<button type="reset" class="btn btn-default" onclick="resetCreateForm()"><i class="fa fa-refresh fa-fw"></i>Reset form</button>-->
                                   <button type="button" class="btn btn-default" onclick="openPasswordChangeModal()"><i class="fa fa-key fa-fw"></i>Change password</button>
+                                  <?php if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) { ?><button type="button" class="btn btn-default" onclick="enableMultiFactor()"><i class="fa fa-mobile fa-fw"></i>Enable Multi-Factor</button><?php } else { ?><button type="button" class="btn btn-default" onclick="enableMultiFactor()"><i class="fa fa-mobile fa-fw"></i>Disable Multi-Factor</button><?php } ?>
                                   <button type="button" class="btn btn-danger" onclick="openAccountDeleteModal()"><i class="fa fa-trash fa-fw"></i>Delete account</button>
                                 </div>
                                 <div class="col-lg-6">
@@ -370,7 +371,7 @@ sec_session_start();
           </div>
            <div class="modal-body">
             <p>Enter your current password and confirm your new one.</p>
-            <form role="form" id="checkpointForm" action="javascript:submitPasswordChange()">
+            <form role="form" id="passwordChangeForm" action="javascript:submitPasswordChange()">
               <div class="form-group">
                   <label>Old Password</label>
                   <input class="form-control" type="password" name="oldpassword"></input>

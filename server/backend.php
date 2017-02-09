@@ -168,7 +168,7 @@ if ($postdata == "ISREADY") {
      if(isset($_POST['email'])) { $email = $_POST['email']; updateUserProfile($mysqli, $_SESSION['user_id'], array("email"=>$email)); }
      if(isset($_POST['firstname'])) { $firstname = $_POST['firstname']; updateUserProfile($mysqli, $_SESSION['user_id'], array("firstname"=>$firstname)); }
      if(isset($_POST['lastname'])) { $lastname = $_POST['lastname']; updateUserProfile($mysqli, $_SESSION['user_id'], array("lastname"=>$lastname)); }
-     if(isset($_POST['passwordhash'])) { $passwordhash = $_POST['passwordhash']; updateUserProfile($mysqli, $_SESSION['user_id'], array("passwordhash"=>$passwordhash)); }
+     if(isset($_POST['passwordhash'])) { $passwordhash = $_POST['passwordhash']; updateUserProfile($mysqli, $_SESSION['user_id'], array("passwordhash"=>password_hash($passwordhash, PASSWORD_BCRYPT))); }
      if(isset($_POST['username'])) { if (checkUserHasPermission($mysqli, $userid, "canmodifyusers") == true) { $username = $_POST['username']; updateUserProfile($mysqli, $_SESSION['user_id'], array("username"=>$username)); }}
      echo "210A"; // Success
    } else {

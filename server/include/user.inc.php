@@ -171,7 +171,7 @@ function checkInviteValid($mysqli, $invitecode) {
 // User account functions
 
 function updateUserProfile($mysqli, $userid, $updatedata) {
-if (isset($updatedata["passwordhash"])) { updateUserProfileData($mysqli, $userid, "password", htmlspecialchars($updatedata["passwordhash"])); }
+if (isset($updatedata["passwordhash"])) { if(strlen($updatedata["passwordhash"]) >= 1) {updateUserProfileData($mysqli, $userid, "password", htmlspecialchars($updatedata["passwordhash"])); }}
 if (isset($updatedata["username"])) { if(strlen($updatedata["username"]) >= 1) { updateUserProfileData($mysqli, $userid, "userid", htmlspecialchars($updatedata["username"])); }}
 if (isset($updatedata["firstname"])) { if(strlen($updatedata["firstname"]) >= 1) { updateUserProfileData($mysqli, $userid, "firstname", htmlspecialchars($updatedata["firstname"])); }}
 if (isset($updatedata["lastname"])) { if(strlen($updatedata["lastname"]) >= 1) { updateUserProfileData($mysqli, $userid, "lastname", htmlspecialchars($updatedata["lastname"])); }}
@@ -322,6 +322,108 @@ function setUserDisabled($mysqli, $userid, $disabled) {
   } else {
     return false;
   }
+}
+
+// Multi Factor
+
+function createUser2FASecret($mysqli, $userid) {
+$secure = random_bytes(256);
+$secure = Base32::encode($secure);
+$email = getUserFromUserID($mysqli, $userid)['email'];
+
+$totp = new TOTP(
+    "$email",
+    "$secure"
+);
+
+$totp->setParameter('image', 'https://localhost/dtadmin/assets/logo.png');
+$tokenuri = $totp->getProvisioningUri();
+$qrcodeuri = $totp->getQrCodeUri();
+
+$stmt = $mysqli->prepare("INSERT INTO 2fa VALUES (NULL, ?, ?, ?, ?)");
+  $stmt->bind_param('isss', $userid, $secure, $tokenuri, $qrcodeuri);
+  $stmt->execute();
+  $stmt->store_result();
+}
+
+function verifyUser2FASecret($mysqli, $userid, $token) {
+  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  if ($stmt = $mysqli->prepare($statement)) {
+    $stmt->bind_param('i', $userid);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows == 1) {
+      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri);
+      $stmt->fetch();
+
+      $email = getUserFromUserID($mysqli, $userid)['email'];
+      $totp = new TOTP(
+          "$email",
+          "$sharedsecret"
+        );
+      if ($totp->verify($token) == true) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+function getUser2FAEnabled($mysqli, $userid) {
+  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  if ($stmt = $mysqli->prepare($statement)) {
+    $stmt->bind_param('i', $userid);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+function getUser2FAProvisioning($mysqli, $userid) {
+  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  if ($stmt = $mysqli->prepare($statement)) {
+    $stmt->bind_param('i', $userid);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows == 1) {
+      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri);
+      $stmt->fetch();
+        return $tokenuri;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+}
+
+function getUser2FAQrcode($mysqli, $userid) {
+  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  if ($stmt = $mysqli->prepare($statement)) {
+    $stmt->bind_param('i', $userid);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows == 1) {
+      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri);
+      $stmt->fetch();
+        return $qrcodeuri;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
 }
 
 ?>

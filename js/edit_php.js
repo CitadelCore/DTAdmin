@@ -65,6 +65,28 @@ function openPasswordChangeModal() {
   $('#passwordChangeModal').modal('show');
 }
 
+function submitPasswordChange() {
+  var oldpassword = sha512(document.forms["passwordChangeForm"]["oldpassword"].value);
+  var newpassword = sha512(document.forms["passwordChangeForm"]["newpassword"].value);
+  var newpasswordconfirm = sha512(document.forms["passwordChangeForm"]["newpasswordconfirm"].value);
+  if (newpassword == newpasswordconfirm) {
+    $.post('server/backend.php', {command: 'UPDATEUSERPROFILE', passwordhash: newpassword, passconfirm: oldpassword}, function(returnedData) {
+     if (returnedData == "210A") {
+      $('#passwordConfirmModal').modal('hide');
+      location.reload();
+     } else if (returnedData == "570A") {
+      changeerrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
+     } else if (returnedData == "580A") {
+      changeerrorblock.innerHTML = "<p style=\"color:red\">Incorrect password.</p>";
+     } else {
+      changeerrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+     }
+   })
+  } else {
+    changeerrorblock.innerHTML = "<p style=\"color:red\">The passwords don't match.</p>";
+  }
+}
+
 function openAccountDeleteModal() {
   $('#accountDeleteModal').modal('show');
 }

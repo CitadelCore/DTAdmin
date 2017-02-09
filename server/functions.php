@@ -13,3 +13,7 @@ include_once "include/mail.inc.php";                        // Mail sending func
 // Third party libraries
 
 include_once "thirdparty/phpmailer/PHPMailerAutoload.php";  // PHPMailer
+use thirdparty\otphp\TOTP;                                  // OTPHP TOTP
+use thirdparty\otphp\HOTP;                                  // OTPHP HOTP
+use thirdparty\otphp\Factory;                               // OTPHP Factory
+use thirdparty\base32\base32;                               // Base32

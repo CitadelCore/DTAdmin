@@ -12,10 +12,14 @@ function postReady(){
     } else if (returnedData == "420A") {
      console.log("Backend is currently unavailable.");
      clearInterval(dataTimer);
+     $('#loadModal').modal('hide');
+     $('#errorModal').modal('show');
      backendReady = false;
     } else if (returnedData == "430A") {
      console.log("Backend is currently down for maintenance.");
      clearInterval(dataTimer);
+     $('#loadModal').modal('hide');
+     $('#errorModal').modal('show');
      backendReady = false;
     } else {
      if (loadCount <= 5) {

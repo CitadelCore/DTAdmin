@@ -9,6 +9,13 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`members` (
     `email` VARCHAR(40) NOT NULL,
     `disabled` BOOLEAN NOT NULL
 );
+CREATE TABLE IF NOT EXISTS `dtadmin`.`2fa` (
+    `tokenid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `userid` INT NOT NULL,
+    `sharedsecret` VARCHAR(100) NOT NULL,
+    `tokenuri` VARCHAR(100) NOT NULL,
+    `qrcodeuri` VARCHAR(100) NOT NULL
+)
 CREATE TABLE IF NOT EXISTS `dtadmin`.`login_attempts` (
     `user_id` INT(11) NOT NULL,
     `time` VARCHAR(30) NOT NULL,
