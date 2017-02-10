@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS `dtadmin`.`members` (
 CREATE TABLE IF NOT EXISTS `dtadmin`.`2fa` (
     `tokenid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `userid` INT NOT NULL,
-    `sharedsecret` VARCHAR(100) NOT NULL,
-    `tokenuri` VARCHAR(100) NOT NULL,
-    `qrcodeuri` VARCHAR(100) NOT NULL,
+    `sharedsecret` VARCHAR(1800) NOT NULL,
+    `tokenuri` VARCHAR(1800) NOT NULL,
+    `qrcodeuri` VARCHAR(1800) NOT NULL,
     `disabled` BOOLEAN NOT NULL
 )
 CREATE TABLE IF NOT EXISTS `dtadmin`.`login_attempts` (

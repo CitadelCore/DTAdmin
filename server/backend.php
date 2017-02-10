@@ -294,7 +294,7 @@ if ($postdata == "ISREADY") {
   if (login_check($mysqli) == true) {
   if (getUser2FAExists($mysqli, $_SESSION['user_id']) == false) {
     activateUser2FA($mysqli, $_SESSION['user_id']);
-    echo json_encode(array("qrcode"=>getUser2FAQrcode($mysqli, $_SESSION['user_id']), "provisioningurl"=>getUser2FAProvisioning($mysqli, $_SESSION['user_id']))); // Success
+    echo "210A"; // Success
  } else {
    echo "840A"; // 2FA already enabled
  }
@@ -306,7 +306,7 @@ if ($postdata == "ISREADY") {
   if (login_check($mysqli) == true) {
   if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) {
     if (isset($_POST['token'])) {
-      if (verifyUser2FASecret($mysqli, $userid, $_POST['token']) == true) {
+      if (verifyUser2FASecret($mysqli, $_SESSION['user_id'], $_POST['token']) == true) {
         enableUser2FA($mysqli, $_SESSION['user_id']);
         echo "210A"; // Success
       } else {
@@ -348,12 +348,25 @@ if ($postdata == "ISREADY") {
 
 } elseif ($postdata == "CHECK2FASTATUS") {
   if (login_check($mysqli) == true) {
-  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) {
-    echo "890A"; // 2FA is disabled
+  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == true) {
+    echo "880A"; // 2FA is enabled
   } elseif (getUser2FAExists($mysqli, $_SESSION['user_id']) == true) {
     echo "890B"; // 2FA is pending
   } else {
+    echo "890A"; // 2FA is disabled
+  }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "GET2FAQRCODE") {
+  if (login_check($mysqli) == true) {
+  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == true) {
     echo "880A"; // 2FA is enabled
+  } elseif (getUser2FAExists($mysqli, $_SESSION['user_id']) == true) {
+    echo getUser2FAQrcode($mysqli, $_SESSION['user_id']);
+  } else {
+    echo "890A"; // 2FA is disabled
   }
 } else {
  echo "570A"; // Not logged in

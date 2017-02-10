@@ -1,5 +1,12 @@
 <?php
 
+// Imports
+
+use OTPHP\TOTP;                                  // OTPHP TOTP
+use OTPHP\HOTP;                                  // OTPHP HOTP
+use OTPHP\Factory;                               // OTPHP Factory
+use Base32\Base32;                               // Base32
+
 // User secret key management
 
 function queryUserSecret($mysqli, $secret) {
@@ -336,40 +343,52 @@ function setUserDisabled($mysqli, $userid, $disabled) {
 function createUser2FASecret($mysqli, $userid) {
 $userid = mysqli_real_escape_string($mysqli, $userid);
 $secure = random_bytes(256);
-$secure = Base32::encode($secure);
+$securecrypt = Base32::encode($secure);
 $email = getUserFromUserID($mysqli, $userid)['email'];
 
 $totp = new TOTP(
     "$email",
-    "$secure"
+    NULL,
+    10,
+    'sha512',
+    6
 );
 
 $totp->setParameter('image', 'https://localhost/dtadmin/assets/logo.png');
+$totp->setIssuer('DTAdmin');
 $tokenuri = $totp->getProvisioningUri();
 $qrcodeuri = $totp->getQrCodeUri();
+$sharedsecret = $totp->getSecret();
 
-$stmt = $mysqli->prepare("INSERT INTO 2fa VALUES (NULL, ?, ?, ?, ?, 1)");
-  $stmt->bind_param('isss', $userid, $secure, $tokenuri, $qrcodeuri);
+if ($stmt = $mysqli->prepare("INSERT INTO 2fa VALUES (NULL, ?, ?, ?, ?, 1)")) {
+  $stmt->bind_param('isss', $userid, $sharedsecret, $tokenuri, $qrcodeuri);
   $stmt->execute();
   $stmt->store_result();
-}
+  return true;
+} else {
+  return false;
+}}
 
 function verifyUser2FASecret($mysqli, $userid, $token) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
-  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows == 1) {
-      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri);
+      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri, $disabled);
       $stmt->fetch();
 
       $email = getUserFromUserID($mysqli, $userid)['email'];
       $totp = new TOTP(
           "$email",
-          "$sharedsecret"
+          "$sharedsecret",
+          10,
+          'sha512',
+          6
         );
+        $totp->now();
       if ($totp->verify($token) == true) {
         return true;
       } else {
@@ -385,7 +404,7 @@ function verifyUser2FASecret($mysqli, $userid, $token) {
 
 function getUser2FAExists($mysqli, $userid) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
-  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
     $stmt->execute();
@@ -419,13 +438,13 @@ function getUser2FAEnabled($mysqli, $userid) {
 
 function getUser2FAProvisioning($mysqli, $userid) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
-  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows == 1) {
-      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri);
+      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri, $disabled);
       $stmt->fetch();
         return $tokenuri;
       } else {
@@ -438,7 +457,7 @@ function getUser2FAProvisioning($mysqli, $userid) {
 
 function invalidateUser2FAToken($mysqli, $userid) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
-  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
     $stmt->execute();
@@ -456,13 +475,13 @@ function invalidateUser2FAToken($mysqli, $userid) {
 
 function getUser2FAQrcode($mysqli, $userid) {
   $userid = mysqli_real_escape_string($mysqli, $userid);
-  $statement = "SELECT * FROM 2fa WHERE userid='" . $userid . "' LIMIT 1";
+  $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
   if ($stmt = $mysqli->prepare($statement)) {
     $stmt->bind_param('i', $userid);
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows == 1) {
-      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri);
+      $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri, $disabled);
       $stmt->fetch();
         return $qrcodeuri;
       } else {
