@@ -80,15 +80,19 @@
 					<h1><i class="fa fa-wrench"></i> Login to DTAdmin</h1><br>
 				  <form id="loginform" role="form" name="loginform" action="javascript:submitCredentials()">
             <div id="username-status-block" class="form-group">
-				        <input type="text" maxlength="20" pattern="^[_A-z0-9]{1,}$" name="userid" placeholder="User ID" data-error="Your User ID is invalid." required>
+				        <input type="text" data-maxlength="20" data-pattern="^[_A-z0-9]{1,}$" name="userid" placeholder="User ID" data-error="Your User ID is invalid." required></input>
             </div>
           <div class="help-block with-errors" id="username-error-block"></div>
             <div id="password-status-block" class="form-group">
-					     <input type="password" data-minlength="6" name="password" placeholder="Password" data-error="Your password is invalid." required>
+					     <input type="password" data-minlength="6" name="password" placeholder="Password" data-error="Your password is invalid." required></input>
             </div>
           <div class="help-block with-errors" id="password-error-block"></div>
+             <input type="checkbox" name="tokencheckbox" onclick="document.getElementById('token').disabled = !this.checked;"></input> Use a security token
+
+             <p><input type="text" id="token" name="token" data-pattern="0-9" data-maxlength="6" data-minlength="6" placeholder="Security token" disabled></input></p>
+        <div class="help-block with-errors" id="token-error-block"></div>
             <div id="login-status-block" class="form-group">
-					     <input type="submit" name="login" class="login loginmodal-submit" value="Login">
+					     <input type="submit" name="login" class="login loginmodal-submit" value="Login"></input>
             </div>
           <div class="help-block with-errors" id="login-error-block"></div>
           <div style="color:red"><?php if(isset($_GET['signoutreason'])) { echo htmlspecialchars($_GET['signoutreason']); } ?></div>

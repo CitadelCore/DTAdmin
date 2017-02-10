@@ -17,25 +17,68 @@ if ($postdata == "ISREADY") {
       if (test_data($userid) == true) {
         if (test_data($password) == true) {
           $loginresult = login($userid, $password, $mysqli);
-          if ($loginresult == "correctuser") {
-            // Successful login
-              echo "510A";
-          } elseif ($loginresult == "incorrectpass") {
-              // Incorrect password
-              echo "520A";
-          } elseif ($loginresult == "usernotexist") {
-              // User dosen't exist
-              echo "530A";
-          } elseif ($loginresult == "lockedout") {
-              // Account locked out
-              echo "540A";
-          } elseif ($loginresult == "ipbanned") {
-                // IP address banned
-                echo "540A";
+          if (getUser2FAEnabled($mysqli, getUserIDFromUsername($mysqli, $_POST['userid']) == true)) {
+            if (isset($_POST['token'])) {
+              if (test_data($_POST['token']) ==  true) {
+                if ($loginresult == "correctuser") {
+                  if (verifyUser2FASecret($mysqli, getUserIDFromUsername($mysqli, $_POST['userid']), $_POST['token']) == true) {
+                    // Successful login
+                      finish_login($userid, $password, $mysqli);
+                      echo "510A";
+                  } elseif (getUser2FAEnabled($mysqli, getUserIDFromUsername($mysqli, $_POST['userid']) == true)) {
+                    // Wrong code
+                      echo "550A";
+                  } else {
+                    // No secret exists
+                      echo "560A";
+                  }
+
+                } elseif ($loginresult == "incorrectpass") {
+                    // Incorrect password
+                    echo "520A";
+                } elseif ($loginresult == "usernotexist") {
+                    // User dosen't exist
+                    echo "530A";
+                } elseif ($loginresult == "lockedout") {
+                    // Account locked out
+                    echo "540A";
+                } elseif ($loginresult == "ipbanned") {
+                      // IP address banned
+                      echo "540A";
+                } else {
+                    // Other internal exception
+                    echo "200E";
+                }
+
+              } else {
+                echo "590A";
+              }
+            } else {
+              // Tried to login while token enforced
+              echo "590A";
+            }
           } else {
-              // Other internal exception
-              echo "550A";
-      }
+            if ($loginresult == "correctuser") {
+              // Successful login
+                finish_login($userid, $password, $mysqli);
+                echo "510A";
+            } elseif ($loginresult == "incorrectpass") {
+                // Incorrect password
+                echo "520A";
+            } elseif ($loginresult == "usernotexist") {
+                // User dosen't exist
+                echo "530A";
+            } elseif ($loginresult == "lockedout") {
+                // Account locked out
+                echo "540A";
+            } elseif ($loginresult == "ipbanned") {
+                  // IP address banned
+                  echo "540A";
+            } else {
+                // Other internal exception
+                echo "200E";
+            }
+          }
      } else {
        // Special chars in password
        echo "560A";
@@ -307,8 +350,11 @@ if ($postdata == "ISREADY") {
   if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) {
     if (isset($_POST['token'])) {
       if (verifyUser2FASecret($mysqli, $_SESSION['user_id'], $_POST['token']) == true) {
-        enableUser2FA($mysqli, $_SESSION['user_id']);
-        echo "210A"; // Success
+        if (enableUser2FA($mysqli, $_SESSION['user_id']) == true) {
+          echo "210A"; // Success
+        } else {
+          echo "200E"; // Internal error
+        }
       } else {
         echo "870A"; // Incorrect confirm code
       }
@@ -324,10 +370,10 @@ if ($postdata == "ISREADY") {
 
 } elseif ($postdata == "REMOVEUSER2FA") {
   if (login_check($mysqli) == true) {
-  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == false) {
+  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == true) {
     if (isset($_POST['token']) && isset($_POST['password'])) {
       if (password_verify($_POST['password'], getUserFromUserID($mysqli, $_SESSION['user_id'])['password']) == true) {
-        if (verifyUser2FASecret($mysqli, $userid, $_POST['token']) == true) {
+        if (verifyUser2FASecret($mysqli, $_SESSION['user_id'], $_POST['token']) == true) {
           deactivateUser2FA($mysqli, $_SESSION['user_id']);
           echo "210A"; // Success
         } else {
@@ -365,6 +411,20 @@ if ($postdata == "ISREADY") {
     echo "880A"; // 2FA is enabled
   } elseif (getUser2FAExists($mysqli, $_SESSION['user_id']) == true) {
     echo getUser2FAQrcode($mysqli, $_SESSION['user_id']);
+  } else {
+    echo "890A"; // 2FA is disabled
+  }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "REMOVEPENDINGTOKEN") {
+  if (login_check($mysqli) == true) {
+  if (getUser2FAEnabled($mysqli, $_SESSION['user_id']) == true) {
+    echo "880A"; // 2FA is enabled
+  } elseif (getUser2FAExists($mysqli, $_SESSION['user_id']) == true) {
+    invalidateUser2FAToken($mysqli, $_SESSION['user_id']);
+    echo "210A";
   } else {
     echo "890A"; // 2FA is disabled
   }

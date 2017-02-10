@@ -91,6 +91,24 @@ function getUserFromUserID($mysqli, $id) {
   }
 }
 
+function getUserIDFromUsername($mysqli, $username) {
+  $statement = "SELECT id FROM members WHERE userid=? LIMIT 1";
+  if ($stmt = $mysqli->prepare($statement)) {
+    $stmt->bind_param('s', $username);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows == 1) {
+      $stmt->bind_result($id);
+      $stmt->fetch();
+      return $id;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
 function checkUserDisabled($mysqli, $userid) {
   if ($stmt = $mysqli->prepare("SELECT * FROM members WHERE id=? AND disabled=? LIMIT 1")) {
       $truefalse = 1;
@@ -348,10 +366,7 @@ $email = getUserFromUserID($mysqli, $userid)['email'];
 
 $totp = new TOTP(
     "$email",
-    NULL,
-    10,
-    'sha512',
-    6
+    NULL
 );
 
 $totp->setParameter('image', 'https://localhost/dtadmin/assets/logo.png');
@@ -383,10 +398,7 @@ function verifyUser2FASecret($mysqli, $userid, $token) {
       $email = getUserFromUserID($mysqli, $userid)['email'];
       $totp = new TOTP(
           "$email",
-          "$sharedsecret",
-          10,
-          'sha512',
-          6
+          "$sharedsecret"
         );
         $totp->now();
       if ($totp->verify($token) == true) {
@@ -497,7 +509,6 @@ function activateUser2FA($mysqli, $userid) {
   if (getUser2FAEnabled($mysqli, $userid) == false) {
     invalidateUser2FAToken($mysqli, $userid);
     createUser2FASecret($mysqli, $userid);
-    sendAccount2FAEnabledMail($mysqli, $userid);
     return true;
   } else {
     return false;
@@ -520,15 +531,15 @@ function enableUser2FA($mysqli, $userid) {
   if (getUser2FAEnabled($mysqli, $userid) == false) {
     if ($stmt = $mysqli->prepare("UPDATE 2fa
                                   SET disabled=0
-                                  WHERE id=?")) {
+                                  WHERE userid=?")) {
       $stmt->bind_param('i', $userid);
       $stmt->execute();
       $stmt->store_result();
+      sendAccount2FAEnabledMail($mysqli, $userid);
       return true;
     } else {
       return false;
     }
-    return true;
   } else {
     return false;
   }

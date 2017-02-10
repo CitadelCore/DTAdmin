@@ -453,25 +453,9 @@ sec_session_start();
      <div class="modal-body">
       <p>The current status of the Multi-Factor service on your account.</p>
       <p id="mfastatusblock"></p>
-      <?php if (getUser2FAExists($mysqli, $_SESSION['user_id']) == false) { ?><button type="button" class="btn btn-default" onclick="submit2FAEnableModal()"><i class="fa fa-mobile fa-fw"></i>Activate Multi-Factor</button><?php } else { ?><button type="button" class="btn btn-default" onclick="open2FADisableModal()"><i class="fa fa-mobile fa-fw"></i>Deactivate Multi-Factor</button><?php } ?>
+      <p id="mfacontrolblock"></p>
 
       <p id="mfastatuserrorblock"></p>
-     </div>
-   </div>
-  </div>
- </div>
-
- <div class="modal fade" id="2FADisableModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-  <div class="modal-dialog" role="document">
-   <div class="modal-content">
-    <div class="modal-header">
-     <h5 class="modal-title">Disable Multi-Factor Authentication</h5>
-    </div>
-     <div class="modal-body">
-      <p>Are you sure you want to disable Multi-Factor Authentication? It helps keep your account secure.</p>
-      <?php if (getUser2FAExists($mysqli, $_SESSION['user_id']) == false) { ?><button type="button" class="btn btn-default" onclick="submit2FAEnableModal()"><i class="fa fa-mobile fa-fw"></i>Activate Multi-Factor</button><?php } else { ?><button type="button" class="btn btn-default" onclick="open2FADisableModal()"><i class="fa fa-mobile fa-fw"></i>Deactivate Multi-Factor</button><?php } ?>
-
-      <p id="mfadisableerrorblock"></p>
      </div>
    </div>
   </div>
@@ -498,6 +482,64 @@ sec_session_start();
         <button class="btn btn-default"><i class="fa fa-mobile fa-fw"></i>Confirm</button>
       </form>
       <p id="mfaconfirmerrorblock"></p>
+     </div>
+   </div>
+  </div>
+ </div>
+
+ <div class="modal fade" id="2FAContinueModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog" role="document">
+   <div class="modal-content">
+    <div class="modal-header">
+     <h5 class="modal-title">Continue Multi-Factor Authentication</h5>
+    </div>
+     <div class="modal-body">
+      <p>To continue setup, please scan this QR code and add the token to your device.</p>
+
+      <p id="qrcodecontinue"></p>
+
+      <form role="form" id="2facontinue" action="javascript:submit2FAEnableContinueModal()">
+        <div class="form-group">
+            <label>Token</label>
+            <input class="form-control" name="tokencontinue" data-minlength="1"></input>
+            <p class="help-block">Enter the most recent security code from your token.</p>
+        </div>
+
+        <button class="btn btn-default"><i class="fa fa-mobile fa-fw"></i>Confirm</button>    <button type="button" class="btn btn-danger" onclick="removePending2FAToken()"><i class="fa fa-trash fa-fw"></i>Remove Token</button>
+      </form>
+      <p id="mfacontinueerrorblock"></p>
+     </div>
+   </div>
+  </div>
+ </div>
+
+ <div class="modal fade" id="2FADisableModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog" role="document">
+   <div class="modal-content">
+    <div class="modal-header">
+     <h5 class="modal-title">Disable Multi-Factor Authentication</h5>
+     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+     </button>
+    </div>
+     <div class="modal-body">
+      <p>Your Multi-Factor token is ready for deprovisioning. Please enter the most recent code from your token as well as your account password.</p>
+
+      <form role="form" id="2fadisable" action="javascript:submit2FADisableConfirmModal()">
+        <div class="form-group">
+            <label>Token</label>
+            <input class="form-control" name="tokendisable" data-minlength="1"></input>
+            <p class="help-block">Enter the most recent security code from your token.</p>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input class="form-control" type="password" name="passworddisable" data-minlength="1"></input>
+            <p class="help-block">Enter your account password.</p>
+        </div>
+
+        <button class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Remove Token</button>
+      </form>
+      <p id="mfadisableerrorblock"></p>
      </div>
    </div>
   </div>

@@ -47,6 +47,35 @@ function ip_check_banned($mysqli) {
       }
 }}
 
+function finish_login($userid, $password, $mysqli) {
+  $clientip = $_SERVER['REMOTE_ADDR'];
+  if ($stmt = $mysqli->prepare("SELECT id, userid, password
+      FROM members
+     WHERE userid = ?
+      LIMIT 1")) {
+      $stmt->bind_param('s', $userid);
+      $stmt->execute();
+      $stmt->store_result();
+
+      $stmt->bind_result($user_id, $username, $db_password);
+      $stmt->fetch();
+      $user_browser = $_SERVER['HTTP_USER_AGENT'];
+      $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+      $_SESSION['user_id'] = $user_id;
+      $username = preg_replace("/[^a-zA-Z0-9_\-]+/",
+                                                  "",
+                                                  $username);
+      $_SESSION['username'] = $username;
+      $_SESSION['login_string'] = hash('sha512',
+                $db_password . $user_browser);
+      $errorreason = "correctuser";
+      $now = time();
+      $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
+                      VALUES (NULL, '$user_id', '$username', '$now', '<i class=\"fa fa-user\"></i> User logged in', '$clientip')");
+      $mysqli->query("DELETE FROM login_attempts WHERE user_id = $user_id");
+   }
+}
+
 function login($userid, $password, $mysqli) {
     $clientip = $_SERVER['REMOTE_ADDR'];
     if (ip_check_banned($mysqli) == false) {
@@ -70,20 +99,6 @@ function login($userid, $password, $mysqli) {
               } else {
                   if (password_verify($password, $db_password)) {
                        //correct pass
-                      $user_browser = $_SERVER['HTTP_USER_AGENT'];
-                      $user_id = preg_replace("/[^0-9]+/", "", $user_id);
-                      $_SESSION['user_id'] = $user_id;
-                      $username = preg_replace("/[^a-zA-Z0-9_\-]+/",
-                                                                  "",
-                                                                  $username);
-                      $_SESSION['username'] = $username;
-                      $_SESSION['login_string'] = hash('sha512',
-                                $db_password . $user_browser);
-                      $errorreason = "correctuser";
-                      $now = time();
-                      $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
-                                      VALUES (NULL, '$user_id', '$username', '$now', '<i class=\"fa fa-user\"></i> User logged in', '$clientip')");
-                      $mysqli->query("DELETE FROM login_attempts WHERE user_id = $user_id");
                       return "correctuser";
                   } else {
                       $now = time();
