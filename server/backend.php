@@ -221,6 +221,49 @@ if ($postdata == "ISREADY") {
   echo "570A"; // Not logged in
 }
 
+} elseif ($postdata == "UPDATEUSERPROFILEADMIN") {
+  if (login_check($mysqli) == true) {
+    if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
+      if (isset($_POST['userid'])) {
+        if ($_POST['userid'] != $_SESSION['user_id']) {
+          if (canUserModifyGroup($mysqli, $_SESSION['user_id'], getUserFromUserID($mysqli, $_POST['userid'])['permissionlevel']) == true) {
+            if(isset($_POST['permissionlevel'])) {
+              if (canUserModifyGroup($mysqli, $_SESSION['user_id'], $_POST['permissionlevel'])) {
+                $permissionlevel = $_POST['permissionlevel'];
+                updateUserProfile($mysqli, $_POST['userid'], array("permissionlevel"=>$permissionlevel));
+                if(isset($_POST['email'])) { $email = $_POST['email']; updateUserProfile($mysqli, $_POST['userid'], array("email"=>$email)); }
+                if(isset($_POST['firstname'])) { $firstname = $_POST['firstname']; updateUserProfile($mysqli, $_POST['userid'], array("firstname"=>$firstname)); }
+                if(isset($_POST['lastname'])) { $lastname = $_POST['lastname']; updateUserProfile($mysqli, $_POST['userid'], array("lastname"=>$lastname)); }
+                if(isset($_POST['passwordhash'])) { $passwordhash = $_POST['passwordhash']; updateUserProfile($mysqli, $_POST['userid'], array("passwordhash"=>password_hash($passwordhash, PASSWORD_BCRYPT))); }
+                if(isset($_POST['username'])) { if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) { $username = $_POST['username']; updateUserProfile($mysqli, $_POST['userid'], array("username"=>$username)); }}
+                echo "210A";
+              } else {
+                echo "630A"; // Cannot modify a higher group
+              }
+            } else {
+              if(isset($_POST['email'])) { $email = $_POST['email']; updateUserProfile($mysqli, $_POST['userid'], array("email"=>$email)); }
+              if(isset($_POST['firstname'])) { $firstname = $_POST['firstname']; updateUserProfile($mysqli, $_POST['userid'], array("firstname"=>$firstname)); }
+              if(isset($_POST['lastname'])) { $lastname = $_POST['lastname']; updateUserProfile($mysqli, $_POST['userid'], array("lastname"=>$lastname)); }
+              if(isset($_POST['passwordhash'])) { $passwordhash = $_POST['passwordhash']; updateUserProfile($mysqli, $_POST['userid'], array("passwordhash"=>password_hash($passwordhash, PASSWORD_BCRYPT))); }
+              if(isset($_POST['username'])) { if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) { $username = $_POST['username']; updateUserProfile($mysqli, $_POST['userid'], array("username"=>$username)); }}
+              echo "210A";
+            }
+          } else {
+            echo "630A"; // Cannot modify a higher group
+          }
+        } else {
+          echo "640A"; // Can't edit own account
+        }
+      } else {
+        echo "720A"; // Param error
+      }
+    } else {
+      echo "620A"; // No permission
+    }
+} else {
+ echo "570A"; // Not logged in
+}
+
 } elseif ($postdata == "CREATEUSERPROFILE") {
   if (ip_check_banned($mysqli) == false) {
     if (isset($_POST['email']) && isset($_POST['firstname']) && isset($_POST['lastname']) && isset($_POST['passwordhash']) && isset($_POST['username'])) {
@@ -256,8 +299,8 @@ if ($postdata == "ISREADY") {
   if (login_check($mysqli) == true) {
   if ($_POST['deleteusername'] == getUserFromUserID($mysqli, $_SESSION['user_id'])['userid']) {
    if (password_verify($_POST['deletepassword'], getUserFromUserID($mysqli, $_SESSION['user_id'])['password']) == true) {
-    deleteUserProfile($mysqli, $_SESSION['user_id']);
-    echo "210A"; // Success
+      deleteUserProfile($mysqli, $_SESSION['user_id']);
+      echo "210A"; // Success
   } else {
     echo "580A"; // Password dosen't match
  }
@@ -272,8 +315,12 @@ if ($postdata == "ISREADY") {
   if (login_check($mysqli) == true) {
   if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
    if ($_POST['userid'] != $_SESSION['user_id']) {
-    disableUser($mysqli, $_POST['userid']);
-    echo "210A"; // Success
+     if (canUserModifyGroup($mysqli, $_SESSION['user_id'], getUserFromUserID($mysqli, $_POST['userid'])['permissionlevel']) == true) {
+       disableUser($mysqli, $_POST['userid']);
+       echo "210A"; // Success
+     } else {
+       echo "630A"; // Cannot modify a higher group
+     }
   } else {
     echo "910A"; // Can't disable own profile!
  }
@@ -288,8 +335,12 @@ if ($postdata == "ISREADY") {
   if (login_check($mysqli) == true) {
   if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
    if ($_POST['userid'] != $_SESSION['user_id']) {
-    enableUser($mysqli, $_POST['userid']);
-    echo "210A"; // Success
+     if (canUserModifyGroup($mysqli, $_SESSION['user_id'], getUserFromUserID($mysqli, $_POST['userid'])['permissionlevel']) == true) {
+       enableUser($mysqli, $_POST['userid']);
+       echo "210A"; // Success
+     } else {
+       echo "630A"; // Cannot modify a higher group
+     }
   } else {
     echo "920A"; // Can't enable own profile!
  }
@@ -304,9 +355,13 @@ if ($postdata == "ISREADY") {
   if (login_check($mysqli) == true) {
   if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
    if ($_POST['userid'] != $_SESSION['user_id']) {
-    //lockUser($mysqli, $_POST['userid']);
-    //echo "210A"; // Success
-    echo "620A";
+     if (canUserModifyGroup($mysqli, $_SESSION['user_id'], getUserFromUserID($mysqli, $_POST['userid'])['permissionlevel']) == true) {
+       //lockUser($mysqli, $_POST['userid']);
+       //echo "210A"; // Success
+       echo "730A";
+     } else {
+       echo "630A"; // Cannot modify a higher group
+     }
   } else {
     echo "930A"; // Can't lock own profile!
  }
@@ -321,10 +376,53 @@ if ($postdata == "ISREADY") {
   if (login_check($mysqli) == true) {
   if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
    if ($_POST['userid'] != $_SESSION['user_id']) {
-    unlockUser($mysqli, $_POST['userid']);
-    echo "210A"; // Success
+     if (canUserModifyGroup($mysqli, $_SESSION['user_id'], getUserFromUserID($mysqli, $_POST['userid'])['permissionlevel']) == true) {
+       unlockUser($mysqli, $_POST['userid']);
+       echo "210A"; // Success
+     } else {
+       echo "630A"; // Cannot modify a higher group
+     }
   } else {
     echo "940A"; // Can't enable own profile!
+ }
+ } else {
+   echo "620A"; // Not authorized
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "DISABLEUSER2FAADMIN") {
+  if (login_check($mysqli) == true) {
+  if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
+   if ($_POST['userid'] != $_SESSION['user_id']) {
+     if (canUserModifyGroup($mysqli, $_SESSION['user_id'], getUserFromUserID($mysqli, $_POST['userid'])['permissionlevel']) == true) {
+       deactivateUser2FA($mysqli, $_POST['userid']);
+       echo "210A"; // Success
+     } else {
+       echo "630A"; // Cannot modify a higher group
+     }
+  } else {
+    echo "950A"; // Can't disable own profile!
+ }
+ } else {
+   echo "620A"; // Not authorized
+ }
+} else {
+ echo "570A"; // Not logged in
+}
+
+} elseif ($postdata == "ENABLEUSER2FAADMIN") {
+  if (login_check($mysqli) == true) {
+  if (checkUserHasPermission($mysqli, $_SESSION['user_id'], "canmodifyusers") == true) {
+   if ($_POST['userid'] != $_SESSION['user_id']) {
+     if (canUserModifyGroup($mysqli, $_SESSION['user_id'], getUserFromUserID($mysqli, $_POST['userid'])['permissionlevel']) == true) {
+       echo "730A";
+     } else {
+       echo "630A"; // Cannot modify a higher group
+     }
+  } else {
+    echo "960A"; // Can't enable own profile!
  }
  } else {
    echo "620A"; // Not authorized
@@ -431,6 +529,37 @@ if ($postdata == "ISREADY") {
 } else {
  echo "570A"; // Not logged in
 }
+
+// Gameserver functions
+
+} elseif ($postdata == "UPDATESERVERDATA") {
+  if(isset($_SESSION['user_id'], $_SESSION['username'], $_SESSION['login_string'], $_SERVER['HTTP_USER_AGENT'], $_POST['serverid'])) {
+    $url = "https://localhost:43105/dtquery/query.php";
+    $data = array('command' => "REFRESHSERVERDATA", 'user_id' => $_SESSION['user_id'], 'username' => $_SESSION['username'], 'login_string' => $_SESSION['login_string'], 'useragent' => $_SERVER['HTTP_USER_AGENT'], 'serverid' => $_POST['serverid']);
+
+    $options = array(
+        'http' => array(
+            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+            'method'  => 'POST',
+            'content' => http_build_query($data)
+        )
+    );
+    $context = stream_context_create($options);
+    $result = file_get_contents($url, false, $context);
+
+    $result = explode("SPLIT", $result);
+      if ($result[0] == "error" OR $result[1] == "error" OR $result[2] == "error" OR $result[3] == "error") {
+        echo "1010A";
+      } else {
+        $playercount = $result[0];
+        $playersonline = $result[1];
+        $cvars = json_decode($result[2], true);
+        $serverinfo = json_decode($result[3], true);
+      }
+  } else {
+    // Param error
+    echo "200E";
+  }
 
 } else {
   echo "300A";

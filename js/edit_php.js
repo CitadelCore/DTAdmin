@@ -331,3 +331,57 @@ function submit2FADisableConfirmModal() {
     }
   });
 }
+
+// Admin profile edit
+
+function confirmAdminEditForm(useridadmin) {
+  var formemail = document.forms["adminedit"]["email"].value;
+  var formfirstname = document.forms["adminedit"]["firstname"].value;
+  var formlastname = document.forms["adminedit"]["lastname"].value;
+  var formusername = document.forms["adminedit"]["username"].value;
+  var formplevel = document.forms["adminedit"]["profileeditpermission"].value;
+  var username = document.forms["adminedit"]["username"].value;
+  if (formplevel.length > 1) {
+    $.post('server/backend.php', {command: 'UPDATEUSERPROFILEADMIN', userid: useridadmin, email: formemail, firstname: formfirstname, lastname: formlastname, username: username, permissionlevel: formplevel}, function(returnedData) {
+     if (returnedData == "210A") {
+      $('#passwordConfirmModal').modal('hide');
+      location.reload();
+     } else if (returnedData == "570A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
+     } else if (returnedData == "580A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Incorrect password.</p>";
+     } else if (returnedData == "630A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Cannot modify a group higher than your own.</p>";
+     } else if (returnedData == "640A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Cannot modify your own account. Use Settings for that.</p>";
+     } else if (returnedData == "620A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">You don't have permission to perform this action.</p>";
+     } else if (returnedData == "720A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Parameter error.</p>";
+     } else {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+     }
+   })
+  } else {
+    $.post('server/backend.php', {command: 'UPDATEUSERPROFILEADMIN', userid: useridadmin, email: formemail, firstname: formfirstname, lastname: formlastname, username: username}, function(returnedData) {
+     if (returnedData == "210A") {
+      $('#passwordConfirmModal').modal('hide');
+      location.reload();
+     } else if (returnedData == "570A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Your session has expired. Please log in again.</p>";
+     } else if (returnedData == "580A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Incorrect password.</p>";
+     } else if (returnedData == "630A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Cannot modify a group higher than your own.</p>";
+     } else if (returnedData == "640A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Cannot modify your own account. Use Settings for that.</p>";
+     } else if (returnedData == "620A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">You don't have permission to perform this action.</p>";
+     } else if (returnedData == "720A") {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">Parameter error.</p>";
+     } else {
+      adminediterrorblock.innerHTML = "<p style=\"color:red\">An internal error occured.</p>";
+     }
+   })
+  }
+}

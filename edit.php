@@ -319,6 +319,110 @@ sec_session_start();
                         <!-- /.col-lg-12 -->
                     </div>
             </div>
+        <?php elseif ($_GET['task'] == "edituser" && isset($_GET['userid']) && checkUserHasPermission($mysqli, $_SESSION['user_id'], 'canmodifyusers') == true && getUserFromUserID($mysqli, $_GET['userid']) != false) : ?>
+          <div class="container-fluid">
+              <div class="row">
+                  <div class="col-lg-12">
+                      <h1 class="page-header">Edit user account</h1>
+                  </div>
+                  <!-- /.col-lg-12 -->
+              </div>
+              <!-- /.row -->
+              <div class="row">
+                  <div class="col-lg-12">
+                      <div class="panel panel-default">
+                          <div class="panel-heading">
+                              Modify a user account
+                          </div>
+                          <div class="panel-body">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <form role="form" id="adminedit" data-toggle="validator" action="javascript:confirmAdminEditForm(<?php echo $_GET['userid']; ?>)">
+                                          <div class="form-group">
+                                              <label>User ID</label>
+                                              <p class="form-control-static"><?php echo $_GET['userid']; ?></p>
+                                              <p class="help-block">The account's User ID.</p>
+                                          </div>
+                                          <div class="form-group">
+                                              <label>Username</label>
+                                              <input class="form-control" id="username" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="<?php echo getUserFromUserID($mysqli, $_GET['userid'])['userid']; ?>">
+                                              <p class="help-block">The user's username.</p>
+                                          </div>
+                                          <div class="form-group">
+                                              <label>Permission Level</label>
+                                              <select class="form-control" id="profileeditpermission">
+                                                <option selected disabled><?php echo ucfirst(getUserFromUserID($mysqli, $_GET['userid'])['permissionlevel']); ?></option>
+                                                <?php if (ucfirst(getUserFromUserID($mysqli, $_GET['userid'])['permissionlevel']) != "User") { ?><option value="user" <?php if (canUserModifyGroup($mysqli, $_SESSION['user_id'], "user") == false) { echo "disabled"; } ?>>User</option><?php } ?>
+                                                <?php if (ucfirst(getUserFromUserID($mysqli, $_GET['userid'])['permissionlevel']) != "Developer") { ?><option value="developer" <?php if (canUserModifyGroup($mysqli, $_SESSION['user_id'], "developer") == false) { echo "disabled"; } ?>>Developer</option><?php } ?>
+                                                <?php if (ucfirst(getUserFromUserID($mysqli, $_GET['userid'])['permissionlevel']) != "Employee") { ?><option value="employee" <?php if (canUserModifyGroup($mysqli, $_SESSION['user_id'], "employee") == false) { echo "disabled"; } ?>>Employee</option><?php } ?>
+                                                <?php if (ucfirst(getUserFromUserID($mysqli, $_GET['userid'])['permissionlevel']) != "Root") { ?><option value="root" <?php if (canUserModifyGroup($mysqli, $_SESSION['user_id'], "root") == false) { echo "disabled"; } ?> >Root</option><?php } ?>
+                                              </select>
+                                          </div>
+                                          <button type="submit" class="btn btn-primary"><i class="fa fa-save fa-fw"></i>Update user account</button>
+                                          <p id="adminediterrorblock"></p>
+                                        </div>
+                                        <div class="col-lg-6">
+                                          <div class="form-group">
+                                              <label>First Name</label>
+                                              <input class="form-control" id="firstname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="<?php echo getUserFromUserID($mysqli, $_GET['userid'])['firstname']; ?>">
+                                              <p class="help-block">The user's first name.</p>
+                                          </div>
+                                          <div class="form-group">
+                                              <label>Last Name</label>
+                                              <input class="form-control" id="lastname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="<?php echo getUserFromUserID($mysqli, $_GET['userid'])['lastname']; ?>">
+                                              <p class="help-block">The user's last name.</p>
+                                          </div>
+                                          <div class="form-group">
+                                              <label>Email Address</label>
+                                              <input class="form-control" id="email" data-minlength="7" pattern="^[_A-z0-9]{1,}$@" maxlength="30" placeholder="<?php echo getUserFromUserID($mysqli, $_GET['userid'])['email']; ?>">
+                                              <p class="help-block">For sending alerts. Only @towerdevs.xyz addresses are allowed.</p>
+                                          </div>
+                                      </form>
+                                        </div>
+                                        <!-- /.col-lg-6 (nested) -->
+                                    </div>
+                                    <!-- /.row (nested) -->
+                                </div>
+                                <div class="col-lg-12">
+                                    <h2 class="page-header">DTQuery Keys</h2>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                          <br>
+                                          <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline">
+                                            <thead>
+                                              <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Actions: activate to sort column descending" style="width: 90px;">Actions</th>
+                                              <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Secret Key: activate to sort column descending" style="width: 50px;">Secret Key</th>
+                                              <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Note: activate to sort column descending" style="width: 150px;">Note</th>
+                                              <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Time Created: activate to sort column descending" style="width: 150px;">Time Created</th>
+                                            </thead>
+                                            <?php if ($stmt = $mysqli->prepare("SELECT secretid, userid, secretkey, note, timecreated
+                                                FROM usersecrets WHERE userid=? LIMIT 20")) {
+                                                  $stmt->bind_param('i', $_GET['userid']);
+                                                  $stmt->execute();
+                                                  $stmt->bind_result($secretid, $userid, $secretkey, $note, $timecreated);
+                                                  while($row = $stmt->fetch())
+                                                  { ?>
+                                                   <tr>
+                                                    <td><a href="#" onclick="deleteSecretKeyConfirm()"><button type="button" class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Revoke</button></a></td>
+                                                    <td><?php echo $secretkey; ?></td>
+                                                    <td><?php echo $note; ?></td>
+                                                    <td><?php echo $timecreated; ?></td>
+                                                  </tr>
+                                                 <?php } $stmt->close(); } ?>
+                                               </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!-- /.col-lg-12 -->
+                        </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
          <?php else : ?>
            <script type="text/javascript">
             window.location.href = "panel.php";

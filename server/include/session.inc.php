@@ -256,7 +256,7 @@ function remote_login_check($mysqli, $uid, $uname, $lstring, $ubrowser) {
             $stmt->execute();
             $stmt->store_result();
             if ($stmt->num_rows == 1) {
-              if (getUserFromUserID($mysqli, $user_id)['disabled'] == 0) {
+              if (getUserFromUserID($mysqli, $uid)['disabled'] == 0) {
                 $stmt->bind_result($password);
                 $stmt->fetch();
                 $login_check = hash('sha512', $password . $ubrowser);
@@ -273,9 +273,9 @@ function remote_login_check($mysqli, $uid, $uname, $lstring, $ubrowser) {
                 }
               } else {
                 $now = time();
-                $user_id = preg_replace("/[^0-9]+/", "", $user_id);
+                $user_id = preg_replace("/[^0-9]+/", "", $uid);
                 $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
-                                VALUES (NULL, '$user_id', 'NONE', '$now', 'Login attempt while disabled', '$clientip')");
+                                VALUES (NULL, '$uid', 'NONE', '$now', 'Login attempt while disabled', '$clientip')");
                     return false;
               }
             } else {
