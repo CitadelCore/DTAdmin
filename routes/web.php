@@ -14,3 +14,7 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/panel.php', function () {
+    return view('layouts/panel', ['username'=>'josephmarsden', 'userid'=>1, 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer"]);
+});
