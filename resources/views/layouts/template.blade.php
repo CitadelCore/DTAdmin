@@ -163,13 +163,11 @@
     <script src="assets/js/signup_php.js"></script>
     <script src="assets/js/servercontrol.js"></script>
     <script type="text/javascript">
-    <script type="text/javascript">
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-    </script>
     </script>
 
 </body>

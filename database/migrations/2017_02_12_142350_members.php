@@ -16,7 +16,7 @@ class Members extends Migration
         //
         Schema::create('members', function(Blueprint $table) {
           $table->increments('id');
-          $table->string('userid', 30);
+          $table->string('user', 30);
           $table->string('password', 255);
           $table->string('remember_token', 100);
           $table->string('permissionlevel', 30);

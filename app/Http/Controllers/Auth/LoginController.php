@@ -7,6 +7,7 @@ use App\Http\Controllers\Session\SessionController;
 use App\Http\Controllers\Backend\BackendUserController;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -53,7 +54,7 @@ class LoginController extends Controller
 
     public function logout() {
       Auth::logout();
-      return view('layouts/user/login');
+      return view('layouts/user/signout');
     }
 
     protected function validator(array $data)
@@ -69,13 +70,19 @@ class LoginController extends Controller
 
     public function authenticate($userid, $passwordhash)
     {
-      if (Auth::attempt(['user' => $userid, 'password' => $passwordhash, 'disabled' => 0])) {
-        if ($user->ip_check_banned() == true && $user->checkbrute($userid) == true) {
+      $user = new SessionController;
+      if (Auth::attempt(['user' => $userid, 'password' => $passwordhash, 'disabled' => 0], true)) {
+        if ($user->ip_check_banned() == false && $user->checklocked($userid) == false) {
           return true;
         } else {
-          $user->attemptInsert($userid);
+          $user->attemptInsert("0");
+          $user->syslogInsert(0, $userid, "Login attempt from banned IP or account locked");
           return false;
         }
+      } else {
+        $user->attemptInsert("0");
+        $user->syslogInsert(0, $userid, "Invalid login attempt");
+        return false;
       }
     }
 }

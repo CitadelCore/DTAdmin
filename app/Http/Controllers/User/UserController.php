@@ -18,7 +18,7 @@ public function getUserFromUserID($id) {
 }
 
 public function getUserIDFromUsername($username) {
-  $model = MembersModel::where('userid', $username)->first();
+  $model = MembersModel::where('user', $username)->first();
   if ($model !== null) {
     return $model;
   } else {
@@ -45,7 +45,7 @@ public function checkUserIDExists($userid) {
 }
 
 public function checkUsernameExists($username) {
-  $model = MembersModel::where('userid', $username)->first();
+  $model = MembersModel::where('user', $username)->first();
   if ($model !== null) {
     return true;
   } else {
@@ -61,7 +61,7 @@ public function checkEmailExists($email) {
 }}
 
 public function checkPasswordHashExists($passwordhash) {
-  $model = MembersModel::where('passwordhash', $passwordhash)->first();
+  $model = MembersModel::where('password', $passwordhash)->first();
   if ($model !== null) {
     return true;
   } else {

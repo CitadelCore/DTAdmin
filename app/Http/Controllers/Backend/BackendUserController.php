@@ -27,7 +27,7 @@ class BackendUserController extends BackendController {
     }
   }
 
-  static function authUser2FA($username, $password, $token) {
+  static function authUser2FA($userid, $password, $token) {
     $twofactor = new User2FAController;
     $user = new UserProfileController;
     $permission = new PermissionController;

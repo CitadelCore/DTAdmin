@@ -20,8 +20,8 @@ Route::get('/', function () {
 });
 
 Route::get('/panel.php', function () {
-    return view('layouts/panel', ['username'=>Auth::user(), 'userid'=>Auth::id(), 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer"]);
-})->middleware('auth');
+    return view('layouts/panel', ['username'=>Auth::user()['user'], 'userid'=>Auth::id(), 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer"]);
+})->middleware('auth:dtadmin');
 
 Route::get('/server/backend.php', function (Request $request) {
   BackendRequestHandler::HandleRequest($request);
@@ -32,9 +32,7 @@ Route::post('/server/backend.php', function (Request $request) {
 });
 
 Route::get('/login', 'Auth\LoginController@showLoginForm');
-Route::post('/login', 'Auth\LoginController@authenticate');
 Route::get('/login.php', 'Auth\LoginController@showLoginForm');
-Route::post('/login.php', 'Auth\LoginController@authenticate');
 Route::get('/signout.php', 'Auth\LoginController@logout');
 
 Route::get('/signup.php', 'Auth\RegisterController@showRegistrationForm');

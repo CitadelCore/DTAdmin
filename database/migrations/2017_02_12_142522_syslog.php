@@ -18,7 +18,7 @@ class Syslog extends Migration
           $table->increments('event');
           $table->integer('user_id')->length(11);
           $table->string('time', 30);
-          $table->string('reason', 30);
+          $table->string('reason', 200);
           $table->string('clientip', 100);
         });
     }

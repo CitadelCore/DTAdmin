@@ -10,19 +10,6 @@ use App\Model\LoginAttemptsModel;
 use App\Model\MembersModel;
 
 class SessionController extends Controller {
-  public function __construct() {
-    $syslog = new SyslogModel;
-    $bannedips = new BannedIpsModel;
-    $loginattempts = new LoginAttemptsModel;
-    $members = new MembersModel;
-  }
-
-  public function __destruct() {
-    unset($syslog);
-    unset($bannedips);
-    unset($loginattempts);
-    unset($members);
-  }
 
   /**public function secure_session_start() {
       $session_name = 'dtadmin_session';
@@ -50,7 +37,11 @@ class SessionController extends Controller {
     syslogInsert(0, "NOUSER", "Login page accessed");
   }
 
-  private function ip_check_banned() {
+  public function ip_check_banned() {
+    $syslog = new SyslogModel;
+    $bannedips = new BannedIpsModel;
+    $loginattempts = new LoginAttemptsModel;
+    $members = new MembersModel;
     $clientip = $_SERVER['REMOTE_ADDR'];
     $count = BannedIpsModel::where('ipaddress', $clientip)->take(1)->get();
         if ($count->contains($clientip) == true) {
@@ -60,11 +51,15 @@ class SessionController extends Controller {
         }
   }
 
-  protected function syslogInsert($user_id, $username, $reason) {
+  public function syslogInsert($user_id, $username, $reason) {
+    $syslog = new SyslogModel;
+    $bannedips = new BannedIpsModel;
+    $loginattempts = new LoginAttemptsModel;
+    $members = new MembersModel;
     $clientip = $_SERVER['REMOTE_ADDR'];
     $now = time();
     $syslog->user_id = $user_id;
-    $syslog->username = $username;
+    //$syslog->username = $username;
     $syslog->time = $now;
     $syslog->reason = $reason;
     $syslog->clientip = $clientip;
@@ -72,7 +67,11 @@ class SessionController extends Controller {
     $syslog->save();
   }
 
-  protected function attemptInsert($user_id) {
+  public function attemptInsert($user_id) {
+    $syslog = new SyslogModel;
+    $bannedips = new BannedIpsModel;
+    $loginattempts = new LoginAttemptsModel;
+    $members = new MembersModel;
     $clientip = $_SERVER['REMOTE_ADDR'];
     $now = time();
     $loginattempts->user_id = $user_id;
@@ -166,23 +165,15 @@ class SessionController extends Controller {
       }
   }**/
 
-  private function checkbrute($user_id) {
+  public function checklocked($user_id) {
     $clientip = $_SERVER['REMOTE_ADDR'];
       $now = time();
       $valid_attempts = $now - (2 * 60 * 60);
-
-      if ($stmt = $mysqli->prepare("SELECT time
-                               FROM login_attempts
-                               WHERE user_id = ?
-                              AND time > '$valid_attempts'")) {
-          $stmt->bind_param('i', $user_id);
-          $stmt->execute();
-          $stmt->store_result();
-          if ($stmt->num_rows > 5) {
-              return true;
-          } else {
-              return false;
-          }
+      $attempt = LoginAttemptsModel::where('user_id', $user_id)->get()->count();
+      if ($attempt > 5) {
+          return true;
+      } else {
+          return false;
       }
   }
 
