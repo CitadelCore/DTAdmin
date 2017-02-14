@@ -14,8 +14,8 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
-        'passwords' => 'users',
+        'guard' => 'dtadmin',
+        'passwords' => 'members',
     ],
 
     /*
@@ -45,6 +45,16 @@ return [
             'driver' => 'token',
             'provider' => 'users',
         ],
+
+        'dtadmin' => [
+            'driver' => 'session',
+            'provider' => 'members',
+        ],
+
+        'dtadmin_api' => [
+            'driver' => 'token',
+            'provider' => 'members',
+        ],
     ],
 
     /*
@@ -68,6 +78,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\User::class,
+        ],
+        'members' => [
+          'driver' => 'eloquent',
+          'model' => App\Model\MembersAuthModel::class,
         ],
 
         // 'users' => [

@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\User\UserController as UserController;
+use App\Model\TwoFactorModel;
 
 class User2FAController extends UserController {
-  private function createUser2FASecret($mysqli, $userid) {
-  $userid = mysqli_real_escape_string($mysqli, $userid);
+  private function createUser2FASecret($userid) {
   $secure = random_bytes(256);
   $securecrypt = Base32::encode($secure);
-  $email = getUserFromUserID($mysqli, $userid)['email'];
+  $email = getUserFromUserID($userid)['email'];
+  $twofactor = new TwoFactorModel;
 
   $totp = new TOTP(
       "$email",
@@ -22,27 +23,19 @@ class User2FAController extends UserController {
   $qrcodeuri = $totp->getQrCodeUri();
   $sharedsecret = $totp->getSecret();
 
-  if ($stmt = $mysqli->prepare("INSERT INTO 2fa VALUES (NULL, ?, ?, ?, ?, 1)")) {
-    $stmt->bind_param('isss', $userid, $sharedsecret, $tokenuri, $qrcodeuri);
-    $stmt->execute();
-    $stmt->store_result();
-    return true;
-  } else {
-    return false;
-  }}
+  $twofactor->userid = $userid;
+  $twofactor->sharedsecret = $sharedsecret;
+  $twofactor->tokenuri = $tokenuri;
+  $twofactor->qrcodeuri = $qrcodeuri;
 
-  public function verifyUser2FASecret($mysqli, $userid, $token) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->bind_param('i', $userid);
-      $stmt->execute();
-      $stmt->store_result();
-      if ($stmt->num_rows == 1) {
-        $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri, $disabled);
-        $stmt->fetch();
+  $twofactor->save();
+  }
 
-        $email = getUserFromUserID($mysqli, $userid)['email'];
+  public function verifyUser2FASecret($userid, $token) {
+    $twofactor = TwoFactorModel::where('userid', $userid)->first();
+      if ($twofactor !== null) {
+        $email = getUserFromUserID($userid)['email'];
+        $sharedsecret = $twofactor['sharedsecret'];
         $totp = new TOTP(
             "$email",
             "$sharedsecret"
@@ -56,133 +49,81 @@ class User2FAController extends UserController {
       } else {
         return false;
       }
-    } else {
-      return false;
-    }
   }
 
-  public function getUser2FAExists($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->bind_param('i', $userid);
-      $stmt->execute();
-      $stmt->store_result();
-      if ($stmt->num_rows == 1) {
+  public function getUser2FAExists($userid) {
+    $twofactor = TwoFactorModel::where('userid', $userid)->first();
+      if ($twofactor !== null) {
         return true;
       } else {
         return false;
       }
-    } else {
-      return false;
-    }
   }
 
-  public function getUser2FAEnabled($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    $statement = "SELECT * FROM 2fa WHERE userid=? AND disabled=0 LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->bind_param('i', $userid);
-      $stmt->execute();
-      $stmt->store_result();
-      if ($stmt->num_rows == 1) {
+  public function getUser2FAEnabled($userid) {
+    $twofactor = TwoFactorModel::where('userid', $userid)->where('disabled', 0)->first();
+      if ($twofactor !== null) {
         return true;
       } else {
         return false;
       }
-    } else {
-      return false;
-    }
   }
 
-  public function getUser2FAProvisioning($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->bind_param('i', $userid);
-      $stmt->execute();
-      $stmt->store_result();
-      if ($stmt->num_rows == 1) {
-        $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri, $disabled);
-        $stmt->fetch();
-          return $tokenuri;
-        } else {
-          return false;
-        }
+  public function getUser2FAProvisioning($userid) {
+    $twofactor = TwoFactorModel::where('userid', $userid)->first();
+      if ($twofactor !== null) {
+        return $twofactor['tokenuri'];
       } else {
         return false;
       }
   }
 
-  public function invalidateUser2FAToken($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->bind_param('i', $userid);
-      $stmt->execute();
-      $stmt->store_result();
-      if ($stmt->num_rows == 1) {
-          $mysqli->query("DELETE FROM 2fa WHERE userid = $userid");
-          return true;
-        } else {
-          return false;
-        }
+  public function invalidateUser2FAToken($userid) {
+    $twofactor = TwoFactorModel::where('userid', $userid)->first();
+      if ($twofactor !== null) {
+        $twofactor->delete();
+        return true;
       } else {
         return false;
       }
   }
 
-  public function getUser2FAQrcode($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    $statement = "SELECT * FROM 2fa WHERE userid=? LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->bind_param('i', $userid);
-      $stmt->execute();
-      $stmt->store_result();
-      if ($stmt->num_rows == 1) {
-        $stmt->bind_result($tokenid, $userid, $sharedsecret, $tokenuri, $qrcodeuri, $disabled);
-        $stmt->fetch();
-          return $qrcodeuri;
-        } else {
-          return false;
-        }
+  public function getUser2FAQrcode($userid) {
+    $twofactor = TwoFactorModel::where('userid', $userid)->first();
+      if ($twofactor !== null) {
+        return $twofactor['qrcodeuri'];
       } else {
         return false;
       }
   }
 
-  public function activateUser2FA($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    if (getUser2FAEnabled($mysqli, $userid) == false) {
-      invalidateUser2FAToken($mysqli, $userid);
-      createUser2FASecret($mysqli, $userid);
+  public function activateUser2FA($userid) {
+    if (getUser2FAEnabled($userid) == false) {
+      invalidateUser2FAToken($userid);
+      createUser2FASecret($userid);
       return true;
     } else {
       return false;
     }
   }
 
-  public function deactivateUser2FA($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    if (getUser2FAEnabled($mysqli, $userid) == true) {
-      invalidateUser2FAToken($mysqli, $userid);
-      sendAccount2FADisabledMail($mysqli, $userid);
+  public function deactivateUser2FA($userid) {
+    if (getUser2FAEnabled($userid) == true) {
+      invalidateUser2FAToken($userid);
+      sendAccount2FADisabledMail($userid);
       return true;
     } else {
       return false;
     }
   }
 
-  public function enableUser2FA($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    if (getUser2FAEnabled($mysqli, $userid) == false) {
-      if ($stmt = $mysqli->prepare("UPDATE 2fa
-                                    SET disabled=0
-                                    WHERE userid=?")) {
-        $stmt->bind_param('i', $userid);
-        $stmt->execute();
-        $stmt->store_result();
-        sendAccount2FAEnabledMail($mysqli, $userid);
+  public function enableUser2FA($userid) {
+    if (getUser2FAEnabled($userid) == false) {
+      $twofactor = TwoFactorModel::where('userid', $userid)->first();
+      if ($twofactor !== null) {
+        $twofactor->disabled = 0;
+        $twofactor->save();
+
         return true;
       } else {
         return false;
@@ -192,23 +133,20 @@ class User2FAController extends UserController {
     }
   }
 
-  public function disableUser2FA($mysqli, $userid) {
-    $userid = mysqli_real_escape_string($mysqli, $userid);
-    if (getUser2FAEnabled($mysqli, $userid) == true) {
-      if ($stmt = $mysqli->prepare("UPDATE 2fa
-                                    SET disabled=1
-                                    WHERE id=?")) {
-        $stmt->bind_param('i', $userid);
-        $stmt->execute();
-        $stmt->store_result();
+  public function disableUser2FA($userid) {
+    if (getUser2FAEnabled($userid) == true) {
+      $twofactor = TwoFactorModel::where('userid', $userid)->first();
+      if ($twofactor !== null) {
+        $twofactor->disabled = 1;
+        $twofactor->save();
+
         return true;
       } else {
         return false;
       }
-      return true;
     } else {
       return false;
     }
-  }
+}
 }
 ?>

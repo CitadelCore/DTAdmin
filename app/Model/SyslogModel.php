@@ -4,9 +4,9 @@ namespace App\Model;
 use Illuminate\Database\Eloquent\Model;
 
 class SyslogModel extends Model {
-  private $table = 'syslog';
-  protected $timestamps = false;
-  protected $primarykey = 'event';
-  protected $guarded = [];
+  protected $table = 'syslog';
+  public $timestamps = false;
+  public $primarykey = 'event';
+  public $guarded = [];
 }
  ?>

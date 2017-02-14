@@ -4,9 +4,9 @@ namespace App\Model;
 use Illuminate\Database\Eloquent\Model;
 
 class UserGroupsModel extends Model {
-  private $table = 'usergroups';
-  protected $timestamps = false;
-  protected $primarykey = 'groupid';
-  protected $guarded = [];
+  protected $table = 'usergroups';
+  public $timestamps = false;
+  public $primarykey = 'groupid';
+  public $guarded = [];
 }
  ?>

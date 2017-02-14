@@ -7,15 +7,24 @@ use App\Http\Controllers\Controller;
 use App\Model\SyslogModel;
 use App\Model\BannedIpsModel;
 use App\Model\LoginAttemptsModel;
+use App\Model\MembersModel;
 
 class SessionController extends Controller {
-  private function __construct() {
+  public function __construct() {
     $syslog = new SyslogModel;
     $bannedips = new BannedIpsModel;
     $loginattempts = new LoginAttemptsModel;
+    $members = new MembersModel;
   }
 
-  public function secure_session_start() {
+  public function __destruct() {
+    unset($syslog);
+    unset($bannedips);
+    unset($loginattempts);
+    unset($members);
+  }
+
+  /**public function secure_session_start() {
       $session_name = 'dtadmin_session';
       session_name($session_name);
 
@@ -35,78 +44,71 @@ class SessionController extends Controller {
 
       session_start();            // Start the PHP session
       session_regenerate_id(true);    // regenerated the session, delete the old one.
+  }**/
+
+  private function logClientIP() {
+    syslogInsert(0, "NOUSER", "Login page accessed");
   }
 
-  private function logClientIP($mysqli) {
+  private function ip_check_banned() {
     $clientip = $_SERVER['REMOTE_ADDR'];
-    $now = time();
-
-    $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
-                    VALUES (NULL, 0, 'NOUSER', '$now', 'Login page accessed', '$clientip')");
-    echo $mysqli->error;
-  }
-
-  private function ip_check_banned($mysqli) {
-    $clientip = $_SERVER['REMOTE_ADDR'];
-    if ($stmt = $mysqli->prepare("SELECT ipid, ipaddress
-        FROM bannedips
-       WHERE ipaddress = ?
-        LIMIT 1")) {
-        $stmt->bind_param('s', $clientip);
-        $stmt->execute();
-        $stmt->store_result();
-
-        if ($stmt->num_rows == 1) {
+    $count = BannedIpsModel::where('ipaddress', $clientip)->take(1)->get();
+        if ($count->contains($clientip) == true) {
           return true;
         } else {
           return false;
         }
-  }}
+  }
 
-  private function finish_login($userid, $password, $mysqli) {
+  protected function syslogInsert($user_id, $username, $reason) {
     $clientip = $_SERVER['REMOTE_ADDR'];
-    if ($stmt = $mysqli->prepare("SELECT id, userid, password
-        FROM members
-       WHERE userid = ?
-        LIMIT 1")) {
-        $stmt->bind_param('s', $userid);
-        $stmt->execute();
-        $stmt->store_result();
+    $now = time();
+    $syslog->user_id = $user_id;
+    $syslog->username = $username;
+    $syslog->time = $now;
+    $syslog->reason = $reason;
+    $syslog->clientip = $clientip;
 
-        $stmt->bind_result($user_id, $username, $db_password);
-        $stmt->fetch();
+    $syslog->save();
+  }
+
+  protected function attemptInsert($user_id) {
+    $clientip = $_SERVER['REMOTE_ADDR'];
+    $now = time();
+    $loginattempts->user_id = $user_id;
+    $loginattempts->time = $now;
+    $loginattempts->clientip = $clientip;
+
+    $loginattempts->save();
+  }
+
+  /**private function finish_login($userid, $password) {
+    $userinfo = MembersModel::where('userid', $userid)->take(1)->get();
+    if ($userinfo->contains($userid) == true) {
+        $user_id = $userinfo->all()[1]["user_id"];
+        $username = $userinfo->all()[1]["username"];
+        $db_password = $userinfo->all()[1]["passwordhash"];
         $user_browser = $_SERVER['HTTP_USER_AGENT'];
         $user_id = preg_replace("/[^0-9]+/", "", $user_id);
         $username = preg_replace("/[^a-zA-Z0-9_\-]+/", "", $username);
-        $_SESSION['username'] = $username;
         session(['user_id' => $user_id], ['username' => $username], ['login_string' => $_SESSION['login_string'] = hash('sha512', $db_password . $user_browser)]);
         $errorreason = "correctuser";
-        $now = time();
-        $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
-                        VALUES (NULL, '$user_id', '$username', '$now', '<i class=\"fa fa-user\"></i> User logged in', '$clientip')");
-        $mysqli->query("DELETE FROM login_attempts WHERE user_id = $user_id");
+        syslogInsert($user_id, $username, '<i class=\"fa fa-user\"></i> User logged in');
+        $attempts = LoginAttemptsModel::where('user_id', $user_id)->take(1)->get();
+        $attempts->delete();
+        return true;
+     } else {
+       return false;
      }
   }
 
-  public function login($userid, $password, $mysqli) {
-      $clientip = $_SERVER['REMOTE_ADDR'];
+  public function login($userid, $password) {
       if (ip_check_banned($mysqli) == false) {
-        if ($stmt = $mysqli->prepare("SELECT id, userid, password
-            FROM members
-           WHERE userid = ?
-            LIMIT 1")) {
-            $stmt->bind_param('s', $userid);
-            $stmt->execute();
-            $stmt->store_result();
-
-            $stmt->bind_result($user_id, $username, $db_password);
-            $stmt->fetch();
-
-            if ($stmt->num_rows == 1) {
+        $userinfo = MembersModel::where('userid', $userid)->take(1)->get();
+            if ($userinfo->contains($userid) == true) {
               if (getUserFromUserID($mysqli, $user_id)['disabled'] == 0) {
                 if (checkbrute($user_id, $mysqli) == true) {
                     lockUser($mysqli, $user_id, $clientip);
-                    $errorreason = "lockedout";
                     return "lockedout";
                 } else {
                     if (password_verify($password, $db_password)) {
@@ -156,16 +158,15 @@ class SessionController extends Controller {
                                 VALUES (NULL, 0, '$userid', '$now', 'Incorrect username attempt', '$clientip')");
                 return "usernotexist";
             }
-        }
       } else {
         $now = time();
         $mysqli->query("INSERT INTO syslog(event, user_id, username, time, reason, clientip)
                         VALUES (NULL, 'NONE', 'NONE', '$now', 'Login attempt from banned IP', '$clientip')");
         return "ipbanned";
       }
-  }
+  }**/
 
-  private function checkbrute($user_id, $mysqli) {
+  private function checkbrute($user_id) {
     $clientip = $_SERVER['REMOTE_ADDR'];
       $now = time();
       $valid_attempts = $now - (2 * 60 * 60);
@@ -185,7 +186,7 @@ class SessionController extends Controller {
       }
   }
 
-  public function login_check($mysqli) {
+  /**public function login_check($mysqli) {
     $clientip = $_SERVER['REMOTE_ADDR'];
     if (ip_check_banned($mysqli) == false) {
       if (null !== session('user_id') && null !== session('username') && null !== session('login_string')) {
@@ -317,6 +318,6 @@ class SessionController extends Controller {
                       VALUES (NULL, 'NONE', 'NONE', '$now', 'Login attempt from banned IP', '$clientip')");
       return false;
     }
-  }
+  }**/
 }
 ?>

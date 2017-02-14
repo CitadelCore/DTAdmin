@@ -4,9 +4,9 @@ namespace App\Model;
 use Illuminate\Database\Eloquent\Model;
 
 class TwoFactorModel extends Model {
-  private $table = '2fa';
-  protected $timestamps = false;
-  protected $primarykey = 'tokenid';
-  protected $guarded = [];
+  protected $table = '2fa';
+  public $timestamps = false;
+  public $primarykey = 'tokenid';
+  public $guarded = [];
 }
  ?>

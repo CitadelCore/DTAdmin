@@ -4,8 +4,8 @@ namespace App\Model;
 use Illuminate\Database\Eloquent\Model;
 
 class BannedIpsModel extends Model {
-  private $table = 'bannedips';
-  protected $timestamps = false;
-  protected $primaryKey = 'ipid';
+  protected $table = 'bannedips';
+  public $timestamps = false;
+  public $primaryKey = 'ipid';
 }
  ?>

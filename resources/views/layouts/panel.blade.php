@@ -1,7 +1,10 @@
 @extends('layouts/template')
 
 @php
-$runningserver = if ($runningservers != 1) { return s; }
+$runningserver = "";
+if ($runningservers != 1) {
+$runningserver = s;
+}
 @endphp
 
 @section('messages')

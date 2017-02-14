@@ -4,9 +4,9 @@ namespace App\Model;
 use Illuminate\Database\Eloquent\Model;
 
 class TasksModel extends Model {
-  private $table = 'tasks';
-  protected $timestamps = false;
-  protected $primarykey = 'taskid';
-  protected $guarded = [];
+  protected $table = 'tasks';
+  public $timestamps = false;
+  public $primarykey = 'taskid';
+  public $guarded = [];
 }
  ?>

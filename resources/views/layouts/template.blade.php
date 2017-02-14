@@ -4,6 +4,7 @@
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -161,6 +162,15 @@
     <script src="assets/js/users_php.js"></script>
     <script src="assets/js/signup_php.js"></script>
     <script src="assets/js/servercontrol.js"></script>
+    <script type="text/javascript">
+    <script type="text/javascript">
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    </script>
+    </script>
 
 </body>
 </html>

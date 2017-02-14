@@ -48,9 +48,11 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => 'required|max:255',
+            'userid' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|min:6|confirmed',
+            'passwordhash' => 'required|min:6|confirmed',
+            'firstname' => 'required|max:255',
+            'lastname' => 'required|max:255'
         ]);
     }
 
@@ -63,9 +65,16 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         return User::create([
-            'name' => $data['name'],
+            'userid' => $data['userid'],
             'email' => $data['email'],
-            'password' => bcrypt($data['password']),
+            'passwordhash' => bcrypt($data['passwordhash']),
+            'firstname' => $data['firstname'],
+            'lastname' => $data['lastname']
         ]);
+    }
+
+    protected function guard()
+    {
+      return Auth::guard('dtadmin-guard');
     }
 }
