@@ -20,7 +20,11 @@ Route::get('/', function () {
 });
 
 Route::get('/panel.php', function () {
-    return view('layouts/panel', ['username'=>Auth::user()['user'], 'userid'=>Auth::id(), 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer"]);
+    return view('layouts/panel', ['username'=>Auth::user()['user'], 'firstname'=>Auth::user()['firstname'], 'lastname'=>Auth::user()['lastname'], 'email'=>Auth::user()['email'], 'permissionlevel'=>Auth::user()['permissionlevel'], 'userid'=>Auth::id(), 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer"]);
+})->middleware('auth:dtadmin');
+
+Route::get('/settings.php', function () {
+    return view('layouts/settings', ['username'=>Auth::user()['user'], 'firstname'=>Auth::user()['firstname'], 'lastname'=>Auth::user()['lastname'], 'email'=>Auth::user()['email'], 'permissionlevel'=>Auth::user()['permissionlevel'], 'userid'=>Auth::id(), 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer"]);
 })->middleware('auth:dtadmin');
 
 Route::get('/server/backend.php', function (Request $request) {
