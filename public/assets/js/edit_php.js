@@ -95,7 +95,8 @@ function resetCreateForm() {
 
 }
 
-function deleteSecretKeyConfirm() {
+function deleteSecretKeyConfirm(secretid) {
+$('#keyDeleteId').val(secretid);
 deleteerrorblock.innerHTML = "";
 $('#keyDeleteModal').modal('show');
 }
@@ -113,7 +114,8 @@ $('#keyCreateModal').modal('show');
 //  }
 //})
 
-function deleteSecretKey(secretid2, userid2) {
+function deleteSecretKey(userid2) {
+  var secretid2 = document.forms["keyDeleteForm"]["keyDeleteId"].value;
   $.post('server/backend.php', {command: 'DELETESECRETKEY', secretid: secretid2, userid: userid2}, function(returnedData) {
     if (returnedData == "210A") {
       $('#keyDeleteModal').modal('hide');

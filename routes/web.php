@@ -14,6 +14,7 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Backend\BackendRequestHandler;
+use App\Http\Controllers\User\UserSecretController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,7 +25,7 @@ Route::get('/panel.php', function () {
 })->middleware('auth:dtadmin');
 
 Route::get('/settings.php', function () {
-    return view('layouts/settings', ['username'=>Auth::user()['user'], 'firstname'=>Auth::user()['firstname'], 'lastname'=>Auth::user()['lastname'], 'email'=>Auth::user()['email'], 'permissionlevel'=>Auth::user()['permissionlevel'], 'userid'=>Auth::id(), 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer"]);
+    return view('layouts/settings', ['username'=>Auth::user()['user'], 'firstname'=>Auth::user()['firstname'], 'lastname'=>Auth::user()['lastname'], 'email'=>Auth::user()['email'], 'permissionlevel'=>Auth::user()['permissionlevel'], 'userid'=>Auth::id(), 'pendingappeals'=>0, 'runningservers'=>1, 'last24errors'=>0, 'supportrequests'=>0, 'dtdev'=>"2.3 Developer", 'secretkeys'=>UserSecretController::getUserSecretTable(Auth::id())]);
 })->middleware('auth:dtadmin');
 
 Route::get('/server/backend.php', function (Request $request) {

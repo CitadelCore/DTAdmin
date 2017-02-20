@@ -97,17 +97,17 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                       <label>First Name</label>
-                      <input class="form-control" id="firstname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="{{ $firstname }}" value="<?php echo $firstname; ?>" required>
+                      <input class="form-control" id="firstname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="{{ $firstname }}">
                       <p class="help-block">Your legal first name.</p>
                   </div>
                   <div class="form-group">
                       <label>Last Name</label>
-                      <input class="form-control" id="lastname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="{{ $lastname }}" value="<?php echo $lastname; ?>" required>
+                      <input class="form-control" id="lastname" data-minlength="1" pattern="^[_A-z0-9]{1,}$" maxlength="25" placeholder="{{ $lastname }}">
                       <p class="help-block">Your legal last name.</p>
                   </div>
                   <div class="form-group">
                       <label>Email Address</label>
-                      <input class="form-control" id="email" data-minlength="7" pattern="^[_A-z0-9]{1,}$@" maxlength="30" placeholder="{{ $email }}" value="<?php echo $email; ?>" required>
+                      <input class="form-control" id="email" data-minlength="3" pattern="^[_A-z0-9]{1,}$@" maxlength="70" placeholder="{{ $email }}">
                       <p class="help-block">For sending alerts. Only @towerdevs.xyz addresses are allowed.</p>
                   </div>
               </form>
@@ -115,7 +115,6 @@
                 <!-- /.col-lg-6 (nested) -->
             </div>
             <!-- /.row (nested) -->
-            <?php $stmt->close(); ?>
         </div>
         <div class="col-lg-12">
             <h2 class="page-header">DTQuery Keys</h2>
@@ -132,19 +131,7 @@
                       <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Note: activate to sort column descending" style="width: 150px;">Note</th>
                       <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Time Created: activate to sort column descending" style="width: 150px;">Time Created</th>
                     </thead>
-                    <?php if ($stmt = $mysqli->prepare("SELECT secretid, userid, secretkey, note, timecreated
-                        FROM usersecrets WHERE userid='" . $_SESSION['user_id'] . "' LIMIT 20")) {
-                          $stmt->execute();
-                          $stmt->bind_result($secretid, $userid, $secretkey, $note, $timecreated);
-                          while($row = $stmt->fetch())
-                          { ?>
-                           <tr>
-                            <td><a href="#" onclick="deleteSecretKeyConfirm()"><button type="button" class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Delete</button></a></td>
-                            <td><?php echo $secretkey; ?></td>
-                            <td><?php echo $note; ?></td>
-                            <td><?php echo $timecreated; ?></td>
-                          </tr>
-                         <?php } $stmt->close(); } ?>
+                    {!! $secretkeys !!}
                        </table>
                 </div>
             </div>
@@ -166,9 +153,11 @@
      This may break DTQuery servers that use this key!
     </div>
 <div class="modal-footer">
+  <form role="form" id="keyDeleteForm" action="javascript:deleteSecretKey('{{ $username }}')"><button type="submit" class="btn btn-danger"><i class="fa fa-trash fa-fw"></i>Confirm deletion</button>
  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
- <button type="button" class="btn btn-danger" onclick="deleteSecretKey(<?php echo $secretid; ?>, <?php echo $_SESSION['user_id']; ?>)"><i class="fa fa-trash fa-fw"></i>Confirm deletion</button>
+ <input type="hidden" id="keyDeleteId"></input>
  <div class="help-block with-errors" id="deleteerrorblock"></div>
+</form>
 </div>
 </div>
 </div>

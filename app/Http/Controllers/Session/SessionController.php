@@ -37,7 +37,7 @@ class SessionController extends Controller {
     syslogInsert(0, "NOUSER", "Login page accessed");
   }
 
-  public function ip_check_banned() {
+  static function ip_check_banned() {
     $syslog = new SyslogModel;
     $bannedips = new BannedIpsModel;
     $loginattempts = new LoginAttemptsModel;

@@ -110,7 +110,7 @@ class User2FAController extends UserController {
   public function deactivateUser2FA($userid) {
     if (getUser2FAEnabled($userid) == true) {
       invalidateUser2FAToken($userid);
-      sendAccount2FADisabledMail($userid);
+      MailController::sendAccount2FADisabled(Auth::id());
       return true;
     } else {
       return false;

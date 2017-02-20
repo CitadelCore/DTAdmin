@@ -1,13 +1,26 @@
 <?php
 namespace App\Http\Controllers\Backend;
 
+// Meta Classes
 use App\Http\Controllers\Controller;
+
+// Auth Controllers
 use App\Http\Controllers\Auth\LoginController;
+
+// Session Controllers
 use App\Http\Controllers\Session\SessionController;
+
+// User Controllers
 use App\Http\Controllers\User\User2FAController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\UserSecretController;
 use App\Http\Controllers\User\UserProfileController;
+
+// Permission Controllers
 use App\Http\Controllers\Permission\PermissionController;
+
+// Models
+use App\Model\UserInvitesModel;
 
 class BackendUserController extends BackendController {
 
@@ -46,5 +59,18 @@ class BackendUserController extends BackendController {
       echo "560A";
   }
 }
+
+  static public function checkInviteValid($invitecode) {
+    $model = UserInvitesModel::where('securitycode', $invitecode)->first();
+    if ($model !== null) {
+      if (time() >= $model['expiry']) {
+        return "expired";
+      } else {
+        return "valid";
+      }
+    } else {
+      return "invalid";
+    }
+  }
 }
 ?>

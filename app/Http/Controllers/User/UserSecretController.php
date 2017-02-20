@@ -3,67 +3,78 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\User\UserController as UserController;
+use App\Model\UserSecretsModel;
 
 class UserSecretController extends UserController {
-  public function queryUserSecret($mysqli, $secret) {
-    if ($stmt2 = $mysqli->prepare("SELECT userid, secretkey
-                                   FROM usersecrets
-                                   WHERE secretkey=?
-                                   LIMIT 1")) {
-        $stmt2->bind_param('s', $secret);
-        $stmt2->execute();
-        $stmt2->store_result();
-        if ($stmt2->num_rows == 1) {
-          $stmt2->bind_result($userid, $secretkey);
-          $stmt2->fetch();
-          if (checkUserDisabled($mysqli, $userid) == false) {
-            return "accepted";
-          } else {
-            return "denied";
-          }
+
+  static function getUserSecretTable($userid) {
+    $table = null;
+      foreach (UserSecretsModel::where('userid', $userid)->get() as $secret) {
+        if ($table == null) {
+          $secretid = htmlspecialchars($secret['secretid']);
+          $secretkey = htmlspecialchars($secret['secretkey']);
+          $note = htmlspecialchars($secret['note']);
+          $timecreated = htmlspecialchars($secret['timecreated']);
+          $table = "<tr>
+                    <td><a href='#' onclick='deleteSecretKeyConfirm($secretid)'><button type='button' class='btn btn-danger'><i class='fa fa-trash fa-fw'></i>Delete</button></a></td>
+                    <td>$secretkey</td>
+                    <td>$note</td>
+                    <td>$timecreated</td>
+                    </tr>
+                    <br>";
         } else {
-          return "denied";
+          $secretid = htmlspecialchars($secret['secretid']);
+          $secretkey = htmlspecialchars($secret['secretkey']);
+          $note = htmlspecialchars($secret['note']);
+          $timecreated = htmlspecialchars($secret['timecreated']);
+          $table = $table . "<tr>
+                    <td><a href='#' onclick='deleteSecretKeyConfirm($secretid)'><button type='button' class='btn btn-danger'><i class='fa fa-trash fa-fw'></i>Delete</button></a></td>
+                    <td>$secretkey</td>
+                    <td>$note</td>
+                    <td>$timecreated</td>
+                    </tr>
+                    <br>";
         }
-  }
-  }
-
-  public function deleteUserSecret($mysqli, $secretid, $userid) {
-    $statement = "SELECT * FROM usersecrets WHERE secretid='" . $secretid . "' AND userid='" . $userid . "' LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->execute();
-      $stmt->store_result();
-        if ($stmt->num_rows == 1) {
-          $statement = "DELETE FROM usersecrets WHERE secretid='" . $secretid . "' AND userid='" . $userid . "' LIMIT 1";
-          if ($stmt = $mysqli->prepare($statement)) {
-          $stmt->execute();
-          $stmt->store_result();
-          }
-        }
+      }
+      if ($table !== null) {
+        return $table;
+      } else {
+        return "";
       }
   }
 
-  public function deleteAllUserSecrets($mysqli, $userid) {
-    $statement = "SELECT * FROM usersecrets WHERE userid='" . $userid . "'";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->execute();
-      $stmt->store_result();
-        if ($stmt->num_rows == 1) {
-          $statement = "DELETE FROM usersecrets WHERE userid='" . $userid . "'";
-          if ($stmt = $mysqli->prepare($statement)) {
-          $stmt->execute();
-          $stmt->store_result();
-          }
-        }
-      }
-  }
-
-  public function createUserSecret($mysqli, $keynote, $userid) {
+  static function createSecretKey($userid, $keynote) {
     $date = date('Y-m-d h:i:s');
-    $randkey = getRandomString(50);
-    $statement = "INSERT INTO usersecrets VALUES(NULL, $userid, '$randkey', '$keynote ', '$date')";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->execute();
-      $stmt->store_result();
+    $randkey = bin2hex(openssl_random_pseudo_bytes(15));
+    $model = new UserSecretsModel;
+    $model->userid = $userid;
+    $model->secretkey = $randkey;
+    $model->note = $keynote;
+    $model->timecreated = $date;
+    $model->save();
+    return true;
+  }
+
+  static function deleteSecretKey($secretid, $userid) {
+    $model = UserSecretsModel::where('secretid', $secretid)->where('userid', $userid)->delete();
+    return true;
+  }
+
+  static function deleteAllUserSecrets($userid) {
+    $model = UserSecretsModel::where('userid', $userid)->delete();
+    return true;
+  }
+
+  static function queryUserSecret($secret) {
+    $model = UserSecretsModel::where('secretkey', $secret)->get()->first();
+    if ($model !== null) {
+      if (UserController::CheckUserDisabled($model['userid'] == false)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
     }
   }
 }

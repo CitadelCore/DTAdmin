@@ -2,47 +2,31 @@
 namespace App\Http\Controllers\Permission;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\User\UserProfileController;
+use App\Model\MembersModel;
+use App\Model\UserGroupsModel;
 
 class PermissionController extends Controller {
-  public function checkUserHasPermission($mysqli, $userid, $permission) {
-    $permissionlevel = getUserFromUserID($mysqli, $userid)['permissionlevel'];
-      $result = $mysqli->query("SELECT " . $permission . " FROM usergroups WHERE groupname='" . $permissionlevel . "'");
-        $grouppermission = $result->fetch_array();
-        if ($grouppermission[$permission] == 1) {
-          $result->close();
-          return true;
-        } else {
-          $result->close();
-          return false;
-        }
-  }
-
-  public function canUserModifyGroup($mysqli, $userid, $group) {
-    $permissionlevel = getUserFromUserID($mysqli, $userid)['permissionlevel'];
-    $statement = "SELECT groupid, groupname FROM usergroups WHERE groupname=? LIMIT 1";
-    if ($stmt = $mysqli->prepare($statement)) {
-      $stmt->bind_param('s', $group);
-      $stmt->execute();
-      $stmt->store_result();
-      $stmt->bind_result($groupid, $groupname);
-      $stmt->fetch();
-      $statement = "SELECT groupid, groupname FROM usergroups WHERE groupname=? LIMIT 1";
-      if ($stmt = $mysqli->prepare($statement)) {
-        $stmt->bind_param('s', $permissionlevel);
-        $stmt->execute();
-        $stmt->store_result();
-        $stmt->bind_result($groupid2, $groupname2);
-        $stmt->fetch();
-        if ($groupid2 >= $groupid) {
-          return false;
-        } else {
-          return true;
-        }
-      } else {
-        return false;
-      }
+  static function checkUserHasPermission($userid, $permission) {
+    $user = new UserProfileController;
+    $permissionlevel = $user->getUserFromUserID($userid['id'])['permissionlevel'];
+    $model = UserGroupsModel::where('groupname', $permissionlevel)->get()->first();
+    if ($model[$permission] == 1) {
+      return true;
     } else {
       return false;
+    }
+  }
+
+  static function canUserModifyGroup($userid, $group) {
+    $user = new UserProfileController;
+    $permissionlevel = $user->getUserFromUserID($userid['id'])['permissionlevel'];
+    $model = UserGroupsModel::where('groupname', $group)->get()->first();
+    $model2 = UserGroupsModel::where('groupname', $permissionlevel)->get()->first();
+    if ($model['groupid'] >= $model2['groupid']) {
+      return false;
+    } else {
+      return true;
     }
   }
 }
